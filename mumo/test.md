@@ -33,6 +33,6 @@ In Part 3, four supra-adjacency matrices are constructed for later (external) mu
 * *supra_mst*, with the minimum spanning tree matrices; and
 * *rand_supra_mst*, with the minimum spanning tree matrices constructed from the randomized data.
 
-## Part 4: Network measures
+### Part 4: Network measures
 In Part 4, nodal eigenvector centrality (EC) is calculated for each of the monolayers, and subsequently EC of the fronto-parietal network (FPN) is extracted and averaged. A dataset containing multilayer nodal EC is then loaded into the workspace, for which again EC of the FPN is extracted and averaged. Finally, the multilayer EC of the FPN and the multiple monolayer EC of the FPN are written to a table and exported to a .csv file for easy importation of the network measures in SPSS.
 
