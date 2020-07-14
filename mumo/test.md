@@ -16,7 +16,7 @@ A more detailed breakdown of these four parts is provided below. The following f
 * remove_empty_regions.m
 * kruskal_algorithm.m
 
-It further uses several functions from the [Brain Connectivity Toolbox](https://sites.google.com/site/bctnet/)
+It further uses several functions from the [Brain Connectivity Toolbox](https://sites.google.com/site/bctnet/), version 2019_03_03.
 
 
 ### Part 1: Calculating connectivity

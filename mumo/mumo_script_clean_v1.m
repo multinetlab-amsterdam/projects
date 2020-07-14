@@ -3,8 +3,10 @@
 %%% 01.06.2020
 %%% L BREEDT
 %
+%
 % This script contains all of the code that was used in the MuMoBrain
-% project.
+% project. See the readme on github for a brief explanation on its use.
+%
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
