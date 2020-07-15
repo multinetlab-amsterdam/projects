@@ -25,8 +25,8 @@ Fs = 1250; % sampling frequency
 %overlap = window_size/2;
 %num_ffts = window_size;
 
-epoch = 1:22; % number of epochs to analyze
-epoch_length = 1:4096:16384; % split epochs?
+epoch = 1:22; % number of epochs to analyze | perhaps you can refer here to some file that determines this number? for completeness? 
+epoch_length = 1:4096:16384; % split larger epochs into smaller ones of ~3.3 seconds
 nrois = 210; % number of rois to analyze (BNA = 246, cortical BNA = 210)
 
 % pre-allocate matrices
@@ -93,7 +93,7 @@ filepat = fullfile(path, 'mumo*');
 
 subs = dir(filepat);
 nsubs = length(subs);
-nrois = 225;
+nrois = 225; % cortical 210 + subcortical FIRST 15
 
 % loop over all cases and calculate pearson's correlations
 tic
@@ -105,7 +105,7 @@ for k = 1:nsubs
     sub = dlmread(fullfname);    
     adjmat = abs(corr(sub));
     adjmat(logical(eye(size(adjmat)))) = 0;
-    adjmat(isnan(adjmat)) = 0;
+    adjmat(isnan(adjmat)) = 0; % why would there be NaNs at all in the adjmat?
     
     fmri_full_raw(k,:,:) = adjmat;
 end
@@ -114,7 +114,7 @@ toc
 % save raw fmri matrices
 %save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','fmri_full_raw','-append')
 
-% remove subcortical rois
+% remove subcortical rois 
 fmri_full_raw(:,211:225,:) = [];
 fmri_full_raw(:,:,211:225) = [];
 
@@ -127,7 +127,7 @@ filepat = fullfile(path, '*BNA.csv');
 
 subs = dir(filepat); 
 nsubs = length(subs);
-nrois = 224; 
+nrois = 224; % could you indicate why this is one less region than the fMRI? 
 
 dwi_full_raw = zeros(nsubs, nrois, nrois);
 for k = 1:nsubs
@@ -158,6 +158,10 @@ dwi_full_raw(:,:,211:224) = [];
 % concatenate fmri + dwi deleted regions
 deleted_regions = vertcat(deleted_regions_fmri, deleted_regions_dwi);
 deleted_regions = sort(deleted_regions);
+
+% you don define the _full_clean matrices so the next part doesn't run.
+% Also, the pli_delta_full_norm are still with more than 210 regions, so I
+% don know how you want to do this? 
 
 % remove empty regions from MEG
 pli_delta_full_clean(:,:,deleted_regions)=[];
