@@ -28,6 +28,7 @@ Fs = 1250; % sampling frequency
 %num_ffts = window_size;
 
 epoch = 1:22; % number of epochs to analyze | perhaps you can refer here to some file that determines this number? for completeness? 
+% -> what kind of file? do you mean an actual piece of script that counts the amount of available epochs per subject?
 epoch_length = 1:4096:16384; % split larger epochs into smaller ones of ~3.3 seconds
 nrois = 210; % number of rois to analyze (BNA = 246, cortical BNA = 210)
 
@@ -107,7 +108,7 @@ for k = 1:nsubs
     sub = dlmread(fullfname);    
     adjmat = abs(corr(sub));
     adjmat(logical(eye(size(adjmat)))) = 0;
-    adjmat(isnan(adjmat)) = 0; % why would there be NaNs at all in the adjmat?
+    adjmat(isnan(adjmat)) = 0; % why would there be NaNs at all in the adjmat? -> there shouldn't be, but I copied this line from another fMRI script (not mine)
     
     fmri_full_raw(k,:,:) = adjmat;
 end
@@ -129,7 +130,7 @@ filepat = fullfile(path, '*BNA.csv');
 
 subs = dir(filepat); 
 nsubs = length(subs);
-nrois = 224; % could you indicate why this is one less region than the fMRI? 
+nrois = 224; % NOTE: fMRI is 225 because of inclusion of the cerebellum
 
 dwi_full_raw = zeros(nsubs, nrois, nrois);
 for k = 1:nsubs
@@ -161,11 +162,21 @@ dwi_full_raw(:,:,211:224) = [];
 deleted_regions = vertcat(deleted_regions_fmri, deleted_regions_dwi);
 deleted_regions = sort(deleted_regions);
 
-% you don define the _full_clean matrices so the next part doesn't run.
-% Also, the pli_delta_full_norm are still with more than 210 regions, so I
-% don know how you want to do this? 
+% it should run now, forgot to specify the pli_xxx_full_clean matrices.
+% the _full_raw pli matrices all have 210 regions, the remove_empty_regions
+% function above determines which regions are empty, removes them from the
+% fmri and dwi matrices automatically, and outputs a list of deleted
+% regions. I then use that list below to remove the same regions from the
+% pli matrices.
 
 % remove empty regions from MEG
+pli_delta_full_clean = pli_delta_full_raw;
+pli_theta_full_clean = pli_theta_full_raw;
+pli_alpha1_full_clean = pli_alpha1_full_raw;
+pli_alpha2_full_clean = pli_alpha2_full_raw;
+pli_beta_full_clean = pli_beta_full_raw;
+pli_gamma_full_clean = pli_gamma_full_raw;
+
 pli_delta_full_clean(:,:,deleted_regions)=[];
 pli_delta_full_clean(:,deleted_regions,:)=[];
 
@@ -259,12 +270,12 @@ mst_pli_bet = zeros(nsubs, nrois, nrois);
 mst_pli_gam = zeros(nsubs, nrois, nrois);
 % construct mst
 for sub = 1:nsubs
-    mst_pli_del(sub,:,:) = kruskal_algorithm(squeeze(pli_delta_full_raw(sub,:,:)));
-    mst_pli_the(sub,:,:) = kruskal_algorithm(squeeze(pli_theta_full_raw(sub,:,:)));
-    mst_pli_al1(sub,:,:) = kruskal_algorithm(squeeze(pli_alpha1_full_raw(sub,:,:)));
-    mst_pli_al2(sub,:,:) = kruskal_algorithm(squeeze(pli_alpha2_full_raw(sub,:,:)));
-    mst_pli_bet(sub,:,:) = kruskal_algorithm(squeeze(pli_beta_full_raw(sub,:,:)));
-    mst_pli_gam(sub,:,:) = kruskal_algorithm(squeeze(pli_gamma_full_raw(sub,:,:)));
+    mst_pli_del(sub,:,:) = kruskal_algorithm(squeeze(pli_delta_full_clean(sub,:,:)));
+    mst_pli_the(sub,:,:) = kruskal_algorithm(squeeze(pli_theta_full_clean(sub,:,:)));
+    mst_pli_al1(sub,:,:) = kruskal_algorithm(squeeze(pli_alpha1_full_clean(sub,:,:)));
+    mst_pli_al2(sub,:,:) = kruskal_algorithm(squeeze(pli_alpha2_full_clean(sub,:,:)));
+    mst_pli_bet(sub,:,:) = kruskal_algorithm(squeeze(pli_beta_full_clean(sub,:,:)));
+    mst_pli_gam(sub,:,:) = kruskal_algorithm(squeeze(pli_gamma_full_clean(sub,:,:)));
 end
 
 % fMRI
@@ -272,7 +283,7 @@ end
 mst_fmri = zeros(nsubs, nrois, nrois);
 % construct mst
 for sub = 1:nsubs
-    mst_fmri(sub,:,:) = kruskal_algorithm(squeeze(fmri_full_raw(sub,:,:)));
+    mst_fmri(sub,:,:) = kruskal_algorithm(squeeze(fmri_full_clean(sub,:,:)));
 end
 
 % DWI
@@ -280,7 +291,7 @@ end
 mst_dwi = zeros(nsubs, nrois, nrois);
 % construct mst
 for sub = 1:nsubs
-    mst_dwi(sub,:,:) = kruskal_algorithm(squeeze(dwi_full_raw(sub,:,:)));
+    mst_dwi(sub,:,:) = kruskal_algorithm(squeeze(dwi_full_clean(sub,:,:)));
 end
 
 % save MSTs
@@ -314,12 +325,12 @@ for sub = 1:nsubs
     fprintf(1, 'Now shuffling sub %s!\n', num2str(sub))
     rand_fmri(sub,:,:) = null_model_und_sign(squeeze(fmri_full_norm(sub,:,:)),1000,1);
     
-    rand_pli_del(sub,:,:) = null_model_und_sign(squeeze(pli_delta_full_raw(sub,:,:)),1000,1);
-    rand_pli_the(sub,:,:) = null_model_und_sign(squeeze(pli_theta_full_raw(sub,:,:)),1000,1);
-    rand_pli_al1(sub,:,:) = null_model_und_sign(squeeze(pli_alpha1_full_raw(sub,:,:)),1000,1);
-    rand_pli_al2(sub,:,:) = null_model_und_sign(squeeze(pli_alpha2_full_raw(sub,:,:)),1000,1);
-    rand_pli_bet(sub,:,:) = null_model_und_sign(squeeze(pli_beta_full_raw(sub,:,:)),1000,1);
-    rand_pli_gam(sub,:,:) = null_model_und_sign(squeeze(pli_gamma_full_raw(sub,:,:)),1000,1);
+    rand_pli_del(sub,:,:) = null_model_und_sign(squeeze(pli_delta_full_norm(sub,:,:)),1000,1);
+    rand_pli_the(sub,:,:) = null_model_und_sign(squeeze(pli_theta_full_norm(sub,:,:)),1000,1);
+    rand_pli_al1(sub,:,:) = null_model_und_sign(squeeze(pli_alpha1_full_norm(sub,:,:)),1000,1);
+    rand_pli_al2(sub,:,:) = null_model_und_sign(squeeze(pli_alpha2_full_norm(sub,:,:)),1000,1);
+    rand_pli_bet(sub,:,:) = null_model_und_sign(squeeze(pli_beta_full_norm(sub,:,:)),1000,1);
+    rand_pli_gam(sub,:,:) = null_model_und_sign(squeeze(pli_gamma_full_norm(sub,:,:)),1000,1);
     
     rand_dwi(sub,:,:) = null_model_und_sign(squeeze(dwi_full_norm(sub,:,:)),1000,1);
 end
