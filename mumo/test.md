@@ -6,8 +6,8 @@ This script is used to convert pre-processed neuroimaging data from different mo
 
 1.	Calculating connectivity
 2.	Randomizing data
-3.	Supra-adjacency matrices
-4.	Network measures
+3.	Constructing supra-adjacency matrices
+4.	Computing network measures
 
 A more detailed breakdown of these four parts is provided below. The following functions, to be found in the /functions folder, are used in the script:
 
@@ -20,10 +20,10 @@ It further uses several functions from the [Brain Connectivity Toolbox](https://
 
 
 ### Part 1: Calculating connectivity
-In Part 1, functional connectivity for MEG and fMRI timeseries is determined and a DWI structural connectivity matrix is constructed. Empty regions (i.e. missing signal) are then removed from these matrices, data is normalized, and minimum spanning trees are constructed.
+In Part 1, functional connectivity for MEG and fMRI timeseries is determined and a dMRI structural connectivity matrix is constructed. Empty regions (i.e. missing signal) are then removed from these matrices, matrices are normalized, and minimum spanning trees are constructed.
 
 ### Part 2: Randomizing data
-In Part 2, the normalized matrices from Part 1 are shuffled while maintaining degree-, weight-, and strength- distributions to create randomized data. Minimum spanning trees are then constructed from these randomized data.
+In Part 2, the normalized matrices from Part 1 are shuffled while maintaining degree-, weight-, and strength- distributions to create randomized data. From the BCT website: _"Values of many network measures are greatly influenced by basic network characteristics, such as the number of nodes and links, and the degree distribution. Consequently, the significance of network statistics should often be established by comparison with statistics calculated on null network models."_ Additionally, minimum spanning trees are constructed from these randomized data.
 
 ### Part 3: Supra-adjacency matrices
 In Part 3, four supra-adjacency matrices are constructed for later (external) multilayer analysis: 
@@ -34,5 +34,4 @@ In Part 3, four supra-adjacency matrices are constructed for later (external) mu
 * *rand_supra_mst*, with the minimum spanning tree matrices constructed from the randomized data.
 
 ### Part 4: Network measures
-In Part 4, nodal eigenvector centrality (EC) is calculated for each of the monolayers, and subsequently EC of the fronto-parietal network (FPN) is extracted and averaged. A dataset containing multilayer nodal EC is then loaded into the workspace, for which again EC of the FPN is extracted and averaged. Finally, the multilayer EC of the FPN and the multiple monolayer EC of the FPN are written to a table and exported to a .csv file for easy importation of the network measures in SPSS.
-
+In Part 4, nodal eigenvector centrality (EC) is calculated for each of the monolayers, and subsequently EC of the fronto-parietal network (FPN) is extracted and averaged. Here, regions belonging to the FPN are based on the classical seven-network parcellation by [Yeo et al. (2011)](https://doi.org/10.1152/jn.00338.2011). A dataset containing multilayer nodal EC is then loaded into the workspace, for which again EC of the FPN is extracted and averaged. Finally, the multilayer EC of the FPN and the multiple monolayer EC of the FPN are written to a table and exported to a .csv file for easy importation of the network measures in SPSS.
