@@ -43,7 +43,7 @@ pli_gamma_epoch = zeros(numel(fname), numel(epoch), numel(epoch_length), nrois, 
 
 % loop over all cases and epochs and calculate PLI
 tic
-for k = 1:length(fname) % k = case #
+for k = 1:2 %length(fname) % k = case #
     cd(['/mnt/anw-gold/MUMO/5_proc_data/meg_BNA_asciis_version1/' fname(k).name '/OD1/']) % first measurement only
     files = dir('*.asc'); % all epochs of 1 subject
     fprintf(1, 'Now calculating PLI for sub %s\n', num2str(k))
@@ -211,7 +211,10 @@ pli_gamma_full_norm = zeros(nsubs,nrois,nrois);
 for sub = 1:nsubs
     M = squeeze(pli_delta_full_clean(sub,:,:));
     M = weight_conversion(M,'autofix');
-    pli_delta_full_norm(sub,:,:) = weight_conversion(M,'normalize');
+    pli_delta_full_norm(sub,:,:) = weight_conversion(M,'normalize'); 
+    % there is still an issue, because M is 197x197 (it is the matrix that
+    % you already took the low signal regions out of) and you defined the
+    % full_norm one with the nrois so 224 regions. 
     
     M = squeeze(pli_theta_full_clean(sub,:,:));
     M = weight_conversion(M,'autofix');
