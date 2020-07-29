@@ -201,6 +201,9 @@ pli_gamma_full_clean(:,deleted_regions,:)=[];
 
 % ----------------------------- normalize ---------------------------------
 
+% set variables
+nrois = length(pli_delta_full_clean(1,1,:));
+
 % MEG
 pli_delta_full_norm = zeros(nsubs,nrois,nrois);
 pli_theta_full_norm = zeros(nsubs,nrois,nrois);
@@ -212,9 +215,6 @@ for sub = 1:nsubs
     M = squeeze(pli_delta_full_clean(sub,:,:));
     M = weight_conversion(M,'autofix');
     pli_delta_full_norm(sub,:,:) = weight_conversion(M,'normalize'); 
-    % there is still an issue, because M is 197x197 (it is the matrix that
-    % you already took the low signal regions out of) and you defined the
-    % full_norm one with the nrois so 224 regions. 
     
     M = squeeze(pli_theta_full_clean(sub,:,:));
     M = weight_conversion(M,'autofix');
@@ -258,10 +258,6 @@ end
 
 
 % -------------------------------- MST ------------------------------------
-
-% set variables
-nsubs = 33;
-nrois = 197;
 
 % MEG
 % pre-allocate matrices
@@ -308,7 +304,7 @@ end
 
 % set variables
 nsubs = 33;
-nrois = 197;
+nrois = length(pli_delta_full_norm(1,1,:));
 
 % pre-allocate matrices
 rand_fmri = zeros(nsubs,nrois,nrois);
@@ -505,7 +501,7 @@ for sub = 1:33
     
     ec_fmri_raw(sub,:) = eigenvector_centrality_und(squeeze(fmri_full_norm(sub,:,:)));
     
-    ec_dwi_raw(sub,:) = eigenvector_centrality_und(squeeze(dwi_norm(sub,:,:)));
+    ec_dwi_raw(sub,:) = eigenvector_centrality_und(squeeze(dwi_full_norm(sub,:,:)));
 end
 
 % normalize EC by dividing by the max to conform with multilayer scaling
