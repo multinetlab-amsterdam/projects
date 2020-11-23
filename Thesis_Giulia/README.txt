@@ -167,7 +167,7 @@ Lastly there is an example of creation of random networks and comptation of the 
 To run it you need to create a empty folder "random".
 
 
-NOTE:If you want to have more explanations on how the algorithms in the file "TDA_Compute_BettiK_Euler" were built (the ideas behind it) you can read the document "Insight_on_the_algorithm". You can find more explanations of the concepts in the function "from_dx_to_cx", "Betti_k" and "dens_thresh".
+NOTE: If you want to have more explanations on how the algorithms in the file "TDA_Compute_BettiK_Euler" were built (the ideas behind it) you can read the document "Insight_on_the_algorithm". There you can find more explanations of the concepts used in the functions "from_dx_to_cx", "Betti_k" and "dens_thresh".
 ###############################################################
 
 File "Compute_GH_matrix":
