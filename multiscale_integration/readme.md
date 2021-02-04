@@ -1,6 +1,6 @@
 This is a project that has resulted in the paper "Neuronal morphology and physiology, functional brain networks and memory in temporal lobe epilepsy", which can be found on bioRxiv. 
 
-*link to bioRxiv will follow*
+biorxiv.org/content/10.1101/2021.01.31.428369v1 
 
 The repo contains:
 - multiscale_integration_memory_tle.m --> the main code to do unilayer network analysis, statistical analysis and create plots
