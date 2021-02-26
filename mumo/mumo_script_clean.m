@@ -1,18 +1,42 @@
-%% mumo_script_clean_v1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% 14.05.2020
-%%% 01.06.2020
-%%% L BREEDT
-%
-%
-% This script contains all of the code that was used in the MuMoBrain
-% project. See the readme on github for a brief explanation on its use.
-%
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% mumo_script_clean_v1
+
+%   This script is used to convert pre-processed neuroimaging data from 
+%   different modalities (dMRI, fMRI, MEG) into connectivity matrices, and 
+%   to perform monolayer network analyses on and construct supra-adjacency 
+%   matrices for multilayer analyses from these matrices. See the readme on 
+%   github for a brief explanation on its use.
+
+%%%
+
+%%author__ = LC Breedt
+%%contact__ = l.breedt@amsterdamumc.nl
+%%date__ = 2020/05/14
+%%status__ = Production
+
+
+%%%%%%%%%%%%%%%%%%%%
+% Review History   %
+%%%%%%%%%%%%%%%%%%%%
+
+%%% Reviewed by Linda Douw 20200714, 20200723
+
+
+%%%%%%%%%%%%%%%%%%%%
+% Requirements     %
+%%%%%%%%%%%%%%%%%%%%
+
+%%% Other m-files required:
+% fft_filt_BNA.m
+% kruskal_algorithm.m
+% pli_matteo.m
+% remove_empty_regions.m
+
+%%% Toolboxes 
+% Brain Connectivity Toolbox (BCT, v2019-03-03; https://sites.google.com/site/bctnet/Home/functions/BCT.zip?attredirects=0)
 
 %% PART 1: CALCULATING CONNECTIVITY
-addpath('/mnt/anw-gold/MUMO/6_projects/breedt_mumo_pilot/b_analyses/scripts/');
-addpath('/mnt/anw-gold/MUMO/5_proc_data/');
+addpath('./functions');
+addpath('/mnt/anw-gold/MUMO/5_proc_data/'); % path to pre-processed imaging data
 
 
 % -------------------------------- MEG ------------------------------------
@@ -27,8 +51,7 @@ Fs = 1250; % sampling frequency
 %overlap = window_size/2;
 %num_ffts = window_size;
 
-epoch = 1:22; % number of epochs to analyze | perhaps you can refer here to some file that determines this number? for completeness? 
-% -> what kind of file? do you mean an actual piece of script that counts the amount of available epochs per subject?
+epoch = 1:22; % number of epochs to analyze (see also M:/MuMo/4_raw_data/meg_database)
 epoch_length = 1:4096:16384; % split larger epochs into smaller ones of ~3.3 seconds
 nrois = 210; % number of rois to analyze (BNA = 246, cortical BNA = 210)
 
@@ -43,8 +66,8 @@ pli_gamma_epoch = zeros(numel(fname), numel(epoch), numel(epoch_length), nrois, 
 
 % loop over all cases and epochs and calculate PLI
 tic
-for k = 1:2 %length(fname) % k = case #
-    cd(['/mnt/anw-gold/MUMO/5_proc_data/meg_BNA_asciis_version1/' fname(k).name '/OD1/']) % first measurement only
+for k = 1:length(fname) % k = case #
+    cd(['/mnt/anw-gold/MUMO/5_proc_data/meg_BNA_asciis_version1/' fname(k).name]) % first measurement only
     files = dir('*.asc'); % all epochs of 1 subject
     fprintf(1, 'Now calculating PLI for sub %s\n', num2str(k))
     for i = 1:length(epoch)       % i = epoch #
@@ -64,6 +87,9 @@ for k = 1:2 %length(fname) % k = case #
     end
 end
 toc
+
+% save raw pli epoch matrices
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_epoch_raw.mat','*_epoch')
 
 % average over epochs (and get 3D array, SUBxROIxROI)
 x=squeeze(mean(pli_delta_epoch,3));
@@ -85,7 +111,7 @@ x=squeeze(mean(pli_gamma_epoch,3));
 pli_gamma_full_raw=squeeze(mean(x,2));
 
 % save raw pli matrices
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','*full_raw')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','*full_raw')
 
 
 % ------------------------------- fMRI ------------------------------------
@@ -108,29 +134,30 @@ for k = 1:nsubs
     sub = dlmread(fullfname);    
     adjmat = abs(corr(sub));
     adjmat(logical(eye(size(adjmat)))) = 0;
-    adjmat(isnan(adjmat)) = 0; % why would there be NaNs at all in the adjmat? -> there shouldn't be, but I copied this line from another fMRI script (not mine)
+    % adjmat(isnan(adjmat)) = 0; % NOTE: there shouldn't be any NaNs, so
+    % this line is redundant
     
     fmri_full_raw(k,:,:) = adjmat;
 end
 toc
 
 % save raw fmri matrices
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','fmri_full_raw','-append')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','fmri_full_raw','-append')
 
 % remove subcortical rois 
 fmri_full_raw(:,211:225,:) = [];
 fmri_full_raw(:,:,211:225) = [];
 
 
-% -------------------------------- DWI ------------------------------------
-
+% % -------------------------------- DWI ------------------------------------
+% 
 % specify filepath & set variables
 path = '/mnt/anw-gold/MUMO/5_proc_data/dwi_BNA/';
 filepat = fullfile(path, '*BNA.csv');
 
 subs = dir(filepat); 
 nsubs = length(subs);
-nrois = 224; % NOTE: fMRI is 225 because of inclusion of the cerebellum
+nrois = 224; % NOTE: fMRI file has 225 rois because of inclusion of the cerebellum
 
 dwi_full_raw = zeros(nsubs, nrois, nrois);
 for k = 1:nsubs
@@ -146,7 +173,7 @@ for k = 1:nsubs
 end
 
 % save raw dwi matrices
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','dwi_full_raw','-append')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_raw.mat','dwi_full_raw','-append')
 
 % remove subcortical rois
 dwi_full_raw(:,211:224,:) = [];
@@ -156,13 +183,15 @@ dwi_full_raw(:,:,211:224) = [];
 % ---------------------------- remove ROIs --------------------------------
 
 % find + remove fmri + dwi empty regions
-[fmri_full_clean, deleted_regions_fmri, dwi_full_clean, deleted_regions_dwi] = remove_empty_regions(fmri_full_raw, dwi_full_raw);
+[fmri_full_clean, deleted_regions_fmri] = remove_empty_regions(fmri_full_raw);
 
 % concatenate fmri + dwi deleted regions
-deleted_regions = vertcat(deleted_regions_fmri, deleted_regions_dwi);
-deleted_regions = sort(deleted_regions);
+% deleted_regions = vertcat(deleted_regions_fmri, deleted_regions_dwi);
+deleted_regions = deleted_regions_fmri;
 
-% it should run now, forgot to specify the pli_xxx_full_clean matrices.
+% save list of regions that are empty
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/deleted_regions_mumo.mat','deleted_regions')
+
 % the _full_raw pli matrices all have 210 regions, the remove_empty_regions
 % function above determines which regions are empty, removes them from the
 % fmri and dwi matrices automatically, and outputs a list of deleted
@@ -196,7 +225,7 @@ pli_gamma_full_clean(:,:,deleted_regions)=[];
 pli_gamma_full_clean(:,deleted_regions,:)=[];
 
 % save clean matrices
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_clean.mat','*full_clean')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/full_clean.mat','*full_clean')
 
 
 % ----------------------------- normalize ---------------------------------
@@ -254,7 +283,7 @@ for sub = 1:nsubs
 end
 
 % save normalized matrices
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_normalized.mat','*full_norm')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_normalized.mat','*full_norm')
 
 
 % -------------------------------- MST ------------------------------------
@@ -294,7 +323,7 @@ for sub = 1:nsubs
 end
 
 % save MSTs
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_mst.mat','mst*')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_mst.mat','mst*')
 
 
 
@@ -320,7 +349,7 @@ rand_dwi = zeros(nsubs,nrois,nrois);
 
 % loop & shuffle
 tic
-for sub = 1:nsubs
+for sub = 1:2 %nsubs
     fprintf(1, 'Now shuffling sub %s!\n', num2str(sub))
     rand_fmri(sub,:,:) = null_model_und_sign(squeeze(fmri_full_norm(sub,:,:)),1000,1);
     
@@ -336,7 +365,7 @@ end
 toc
 
 % save randomized matrices
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_randomized.mat','rand*')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_randomized.mat','rand*')
 
 
 % -------------------------------- MST ------------------------------------
@@ -369,11 +398,11 @@ for sub = 1:nsubs
 end
 
 % save randomized MSTs
-%save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_randomized_mst.mat','rand_mst*')
+save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/clean_randomized_mst.mat','rand_mst*')
 
 
 
-%% PART 3: SUPRA-ADJACENCY MATRICES
+%% PART 3: CONSTRUCTING SUPRA-ADJACENCY MATRICES
 
 % set variables
 nlrs = 8;
@@ -454,7 +483,7 @@ save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/rand_supra_mst.m
 
 
 
-%% PART 4: NETWORK MEASURES
+%% PART 4: COMPUTING NETWORK MEASURES
 
 % set variables
 N = 197;
@@ -470,12 +499,12 @@ fpn_id = find(bool); % mumo FPN regions
 % ---------------------------- monolayer ----------------------------------
 
 % pre-allocate matrices
-ec_meg_delta_raw = zeros(33, 197);
-ec_meg_theta_raw = zeros(33, 197);
-ec_meg_alpha1_raw = zeros(33, 197);
-ec_meg_alpha2_raw = zeros(33, 197);
-ec_meg_beta_raw = zeros(33, 197);
-ec_meg_gamma_raw = zeros(33, 197);
+test_ec_meg_delta_raw = zeros(33, 197);
+test_ec_meg_theta_raw = zeros(33, 197);
+test_ec_meg_alpha1_raw = zeros(33, 197);
+test_ec_meg_alpha2_raw = zeros(33, 197);
+test_ec_meg_beta_raw = zeros(33, 197);
+test_ec_meg_gamma_raw = zeros(33, 197);
 
 ec_meg_delta_fpn = zeros(33, 18);
 ec_meg_theta_fpn = zeros(33, 18);
@@ -492,12 +521,12 @@ ec_dwi_fpn = zeros(33, 18);
 
 % caclulate nodal EC
 for sub = 1:33
-    ec_meg_delta_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_del(sub,:,:)));
-    ec_meg_theta_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_the(sub,:,:)));
-    ec_meg_alpha1_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_al1(sub,:,:)));
-    ec_meg_alpha2_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_al2(sub,:,:)));
-    ec_meg_beta_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_bet(sub,:,:)));
-    ec_meg_gamma_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_gam(sub,:,:)));
+    test_ec_meg_delta_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_del(sub,:,:)));
+    test_ec_meg_theta_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_the(sub,:,:)));
+    test_ec_meg_alpha1_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_al1(sub,:,:)));
+    test_ec_meg_alpha2_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_al2(sub,:,:)));
+    test_ec_meg_beta_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_bet(sub,:,:)));
+    test_ec_meg_gamma_raw(sub,:) = eigenvector_centrality_und(squeeze(mst_pli_gam(sub,:,:)));
     
     ec_fmri_raw(sub,:) = eigenvector_centrality_und(squeeze(fmri_full_norm(sub,:,:)));
     
@@ -505,24 +534,24 @@ for sub = 1:33
 end
 
 % normalize EC by dividing by the max to conform with multilayer scaling
-ec_meg_delta_norm = zeros(33, 197);
-ec_meg_theta_norm = zeros(33, 197);
-ec_meg_alpha1_norm = zeros(33, 197);
-ec_meg_alpha2_norm = zeros(33, 197);
-ec_meg_beta_norm = zeros(33, 197);
-ec_meg_gamma_norm = zeros(33, 197);
+test_ec_meg_delta_norm = zeros(33, 197);
+test_ec_meg_theta_norm = zeros(33, 197);
+test_ec_meg_alpha1_norm = zeros(33, 197);
+test_ec_meg_alpha2_norm = zeros(33, 197);
+test_ec_meg_beta_norm = zeros(33, 197);
+test_ec_meg_gamma_norm = zeros(33, 197);
 
 ec_fmri_norm = zeros(33, 197);
 
 ec_dwi_norm = zeros(33, 197);
 
 for sub = 1:33
-    ec_meg_delta_norm(sub,:) = squeeze(ec_meg_delta_raw(sub,:)) / max(squeeze(ec_meg_delta_raw(sub,:)));
-    ec_meg_theta_norm(sub,:) = squeeze(ec_meg_theta_raw(sub,:)) / max(squeeze(ec_meg_theta_raw(sub,:)));
-    ec_meg_alpha1_norm(sub,:) = squeeze(ec_meg_alpha1_raw(sub,:)) / max(squeeze(ec_meg_alpha1_raw(sub,:)));
-    ec_meg_alpha2_norm(sub,:) = squeeze(ec_meg_alpha2_raw(sub,:)) / max(squeeze(ec_meg_alpha2_raw(sub,:)));
-    ec_meg_beta_norm(sub,:) = squeeze(ec_meg_beta_raw(sub,:)) / max(squeeze(ec_meg_beta_raw(sub,:)));
-    ec_meg_gamma_norm(sub,:) = squeeze(ec_meg_gamma_raw(sub,:)) / max(squeeze(ec_meg_gamma_raw(sub,:)));
+    test_ec_meg_delta_norm(sub,:) = squeeze(test_ec_meg_delta_raw(sub,:)) / max(squeeze(test_ec_meg_delta_raw(sub,:)));
+    test_ec_meg_theta_norm(sub,:) = squeeze(test_ec_meg_theta_raw(sub,:)) / max(squeeze(test_ec_meg_theta_raw(sub,:)));
+    test_ec_meg_alpha1_norm(sub,:) = squeeze(test_ec_meg_alpha1_raw(sub,:)) / max(squeeze(test_ec_meg_alpha1_raw(sub,:)));
+    test_ec_meg_alpha2_norm(sub,:) = squeeze(test_ec_meg_alpha2_raw(sub,:)) / max(squeeze(test_ec_meg_alpha2_raw(sub,:)));
+    test_ec_meg_beta_norm(sub,:) = squeeze(test_ec_meg_beta_raw(sub,:)) / max(squeeze(test_ec_meg_beta_raw(sub,:)));
+    test_ec_meg_gamma_norm(sub,:) = squeeze(test_ec_meg_gamma_raw(sub,:)) / max(squeeze(test_ec_meg_gamma_raw(sub,:)));
     
     ec_fmri_norm(sub,:) = squeeze(ec_fmri_raw(sub,:)) / max(squeeze(ec_fmri_raw(sub,:)));
     
@@ -534,17 +563,17 @@ save('/data/MUMO/6_projects/breedt_mumo_pilot/b_analyses/output/monolayer_nodal_
 
 % extract EC of FPN
 for sub = 1:33
-    tmp = squeeze(ec_meg_delta_norm(sub,:));
+    tmp = squeeze(test_ec_meg_delta_norm(sub,:));
     ec_meg_delta_fpn(sub,:) = tmp(fpn_id);
-    tmp = squeeze(ec_meg_theta_norm(sub,:));
+    tmp = squeeze(test_ec_meg_theta_norm(sub,:));
     ec_meg_theta_fpn(sub,:) = tmp(fpn_id);
-    tmp = squeeze(ec_meg_alpha1_norm(sub,:));
+    tmp = squeeze(test_ec_meg_alpha1_norm(sub,:));
     ec_meg_alpha1_fpn(sub,:) = tmp(fpn_id);
-    tmp = squeeze(ec_meg_alpha2_norm(sub,:));
+    tmp = squeeze(test_ec_meg_alpha2_norm(sub,:));
     ec_meg_alpha2_fpn(sub,:) = tmp(fpn_id);
-    tmp = squeeze(ec_meg_beta_norm(sub,:));
+    tmp = squeeze(test_ec_meg_beta_norm(sub,:));
     ec_meg_beta_fpn(sub,:) = tmp(fpn_id);
-    tmp = squeeze(ec_meg_gamma_norm(sub,:));
+    tmp = squeeze(test_ec_meg_gamma_norm(sub,:));
     ec_meg_gamma_fpn(sub,:) = tmp(fpn_id);
     
     tmp = squeeze(ec_fmri_norm(sub,:));
