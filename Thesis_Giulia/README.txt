@@ -1,3 +1,7 @@
+// Fernando Santos revised this project and added part of these codes to https://github.com/multinetlab-amsterdam/network_TDA_tutorial/blob/main/Background%20Scripts/TDA.py //
+
+
+
 In this folder there are 3 files with codes: 
 
 -TDA_Compute_BettiK_Euler
