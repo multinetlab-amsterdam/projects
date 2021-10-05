@@ -1,8 +1,8 @@
 This is a project that has resulted in the paper "Neuronal morphology and physiology, functional brain networks and memory in temporal lobe epilepsy", published in Cerebral Cortex in 2021 (open access): https://academic-oup-com.vu-nl.idm.oclc.org/cercor/advance-article/doi/10.1093/cercor/bhab349/6375261
 
 The repo contains:
-- multiscale_integration_memory_tle.m --> the main code to do unilayer network analysis, statistical analysis and create plots
-- full_output.mat --> the full output generated of the main code when ran on the files within the data/ folder
+- multiscale_integration_memory_tle_final.m --> the main code to do unilayer network analysis, statistical analysis and create plots
+- full_output_final.mat --> the full output generated of the main code when ran on the files within the data/ folder
 - data/micro_clinical_data.mat --> contains all clinical data (identical to table 1 in the paper) and micro-scale variables
 - data/aal_fmri_adjmats.mat --> contains the AAL fMRI adjacency matrices
 - data/aal_meg_adjmats_t.mat --> contains the AAL MEG adjacency matrices
