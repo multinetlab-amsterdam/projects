@@ -1,3 +1,16 @@
+## Regional healthy brain activity, glioma occurrence and symptomatology ##
+
+This repo contains all files associated with this manuscript by Numan et al., which is available as a preprint at https://www.medrxiv.org/content/10.1101/2022.01.14.22269290v1
+
+## Main Code and Data ##
+
+All main analyses were performed using the Matlab script LENS_git_20220120.m. Source data (anonymized when necessary) is included in the file LENS_source_data_final.mat
+
+## Clinical statistical analyses ##
+
+Clinical comparisons between groups and associations with clinical parameters within groups were performed in IBM SPSS statistics. Files and syntax are uploaded, namely (1) a separate datafile on the AMS cohort with accompanying synatx, (2) a datafile on the BOS/MGH cohort with syntax, and (3) a combined database of both cohorts with associated syntax. 
+
+
 ## Spin Test ##
 
 The scripts SpinTest.m, cortical2surface.m and SpinPermuFS.m aim to perform the spin test in volumetric data. 
