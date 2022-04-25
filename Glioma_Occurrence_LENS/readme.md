@@ -4,11 +4,11 @@ This repo contains all files associated with this manuscript by Numan et al., wh
 
 ## Main Code and Data ##
 
-All main analyses were performed using the Matlab script LENS_git_20220120.m. Source data (anonymized when necessary) is included in the file LENS_source_data_final.mat
+All main analyses were performed using the Matlab script LENS_git_20220425_revision.m. Source data (anonymized when necessary) is included in the file LENS_source_data_final.mat
 
 ## Clinical statistical analyses ##
 
-Clinical comparisons between groups and associations with clinical parameters within groups were performed in IBM SPSS statistics. Files and syntax are uploaded, namely (1) a separate datafile on the AMS cohort with accompanying synatx, (2) a datafile on the BOS/MGH cohort with syntax, and (3) a combined database of both cohorts with associated syntax. 
+Clinical comparisons between groups and associations with clinical parameters within groups were performed in IBM SPSS statistics. Files and syntax are uploaded.
 
 
 ## Spin Test ##
