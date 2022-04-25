@@ -35,7 +35,7 @@
 
 %% First load all data
 
-load('/data/KNW/l.douw/numan_lens/git_revision/LENS_source_data_final.mat')
+load('/LENS_source_data_final.mat')
 
 %% Create intrinsic regional values using the HCs matched to the AMS cohort
     
