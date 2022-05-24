@@ -622,17 +622,17 @@ spin_bbp_tcga_idhmut_noncodel_q3 = cat(2,tcga_data_idhmut_noncodel_cortical(sele
 %% non q3
 
 %all 
-spin_slope_all_idhwt = cat(2,all_idhwt_cortical,HC_FOOOF_slope_matched_mean_83');
-spin_slope_all_idhmut_codel = cat(2,all_idhmut_codel_cortical,HC_FOOOF_slope_matched_mean_83');
-spin_slope_all_idhmut_noncodel = cat(2,all_idhmut_noncodel_cortical,HC_FOOOF_slope_matched_mean_83');
+spin_slope_all_idhwt = cat(2,all_idhwt_cortical,HC_FOOOF_slope_matched_mean_AMS');
+spin_slope_all_idhmut_codel = cat(2,all_idhmut_codel_cortical,HC_FOOOF_slope_matched_mean_AMS');
+spin_slope_all_idhmut_noncodel = cat(2,all_idhmut_noncodel_cortical,HC_FOOOF_slope_matched_mean_AMS');
 
-spin_offset_all_idhwt = cat(2,all_idhwt_cortical,(HC_FOOOF_offset_matched_mean_83)');
-spin_offset_all_idhmut_codel = cat(2,all_idhmut_codel_cortical, (HC_FOOOF_offset_matched_mean_83)');
-spin_offset_all_idhmut_noncodel = cat(2,all_idhmut_noncodel_cortical, (HC_FOOOF_offset_matched_mean_83)');
+spin_offset_all_idhwt = cat(2,all_idhwt_cortical,(HC_FOOOF_offset_matched_mean_AMS)');
+spin_offset_all_idhmut_codel = cat(2,all_idhmut_codel_cortical, (HC_FOOOF_offset_matched_mean_AMS)');
+spin_offset_all_idhmut_noncodel = cat(2,all_idhmut_noncodel_cortical, (HC_FOOOF_offset_matched_mean_AMS)');
 
-spin_bbp_all_idhwt = cat(2,all_idhwt_cortical, (HC_broadband_power_matched_mean_83)');
-spin_bbp_all_idhmut_codel = cat(2,all_idhmut_codel_cortical, (HC_broadband_power_matched_mean_83)');
-spin_bbp_all_idhmut_noncodel = cat(2,all_idhmut_noncodel_cortical, (HC_broadband_power_matched_mean_83)');
+spin_bbp_all_idhwt = cat(2,all_idhwt_cortical, (HC_broadband_power_matched_mean_AMS)');
+spin_bbp_all_idhmut_codel = cat(2,all_idhmut_codel_cortical, (HC_broadband_power_matched_mean_AMS)');
+spin_bbp_all_idhmut_noncodel = cat(2,all_idhmut_noncodel_cortical, (HC_broadband_power_matched_mean_AMS)');
 
 %AMS
 spin_offset_ams_idhwt = cat(2,ams_data_idhwt_cortical, (HC_FOOOF_offset_matched_mean_AMS)');
