@@ -1,5 +1,5 @@
 ###  Toward unraveling the association between fatigue and tumor- and treatment-related factors, symptoms, and quality of life in glioma
-#### Jantine G. Röttgering, Vera Belgers, Mathilde C.M. Kouwenhoven, Philip C. De Witt Hamer, Hans Knoop, Linda Douw, Martin Klein
+#### Jantine G. Röttgering, Vera Belgers, Philip C. De Witt Hamer, Hans Knoop, Linda Douw, Martin Klein
 
 The *full* script is used for internal purposed. The cases are selected, data formatted, questionnaires scored and analysed conducted. 
 
