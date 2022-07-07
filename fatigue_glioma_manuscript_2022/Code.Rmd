@@ -1,0 +1,391 @@
+---
+title: "Towards unraveling fatigue"
+author: "Jantine Röttgering"
+date: "10-5-2022"
+output: html_document
+---
+
+##### Email: j.rottgering@amsterdamumc.nl
+##### Purpose of script: 
+Analyses of the 2022 manuscript on fatigue in glioma patients.
+
+##### Status: 
+Under revision
+
+##### Review History
+Reviewed by: Vera Belgers
+Date: 30-6-2022
+
+##### Requirements
+Created and ran with Rstudio 4.0.3, as a Markdown file.
+
+#### Notes
+This script is used for the analyses of the 2022 paper "Toward unraveling the association between fatigue and tumor- and treatment-related factors, symptoms, and quality of life in glioma". 
+
+It consists of several parts:
+
+1. Synthesizing mock data for the Glioma Cohort and the Longitudinal subgroup
+2. Percentages of fatigued patients
+3. Raincloudplots - Glioma Cohort
+4. Linear mixed model - Glioma Cohort
+5. Icc - Longitudinal subgroup
+6. Change plot - Longitudinal subgroup
+7. Multiple linear regression - Longitudinal subgroup
+
+#### Load libraries
+
+```{r, message=FALSE, warning = FALSE}
+library(dplyr)
+library(plyr)
+library(ggplot2)
+library(raincloudplots)
+library(lme4)
+library(irr)
+library(car)
+library(MASS)
+library(MuMIn)
+library(lmerTest)
+```
+
+# 1. Synthesizing mock datasets
+The analyses in the 2022 fatigue paper consist of the Glioma Cohort and a subgroup, the Longitudinal subgroup. Here we provide mock data to run the analyses with. The data does not reflect the real distribution of the actual data, therefore the results produced in this script should merely be used to understand the analyses itself.
+
+### Glioma cohort
+```{r}
+set.seed(1234)
+
+df <- data.frame (random_id = c(1:222, 1:111),
+                   assessment  = c(sample(c("Pre-operative", "Post-operative"), 333, replace=TRUE)),
+                   CIS_total = c(sample(20:140, 333, replace=TRUE)),
+                   CIS_fatigue  = c(sample(8:56, 333, replace=TRUE)),
+                   CIS_concentration = c(sample(5:34, 333, replace=TRUE)),
+                   CIS_motivation = c(sample(4:28, 333, replace=TRUE)),
+                   CIS_activity = c(sample(3:21, 333, replace=TRUE)),
+                   SF36_PF = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_SC = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_RLP = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_RLM = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_MH = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_P = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_HP = c(sample(0:100, 333, replace=TRUE)),
+                   SF36_CIH = c(sample(0:100, 333, replace=TRUE)),
+                   CESD_total = c(sample(0:100, 333, replace=TRUE)),
+                   mos_cog = c(sample(11:36, 333, replace=TRUE)),
+                   BN20_FU  = c(sample(0:100, 333, replace=TRUE)),
+                   BN20_MD   = c(sample(0:100, 333, replace=TRUE)),
+                   BN20_S  = c(sample(0:100, 333, replace=TRUE)),
+                   side = c(sample(c("left", "right"), 333, replace=TRUE)),
+                   kps = c(sample(c("70-80", "90-100"), 333, replace=TRUE)),
+                   sex = c(sample(c("female", "male"), 333, replace=TRUE)),
+                   age = c(sample(c(18:81), 333, replace=TRUE)),
+                   verhage = c(sample(c("Low (1-4)", "Middle (5)", "High (6-7)"), 333, replace=TRUE)),
+                   idh = c(sample(c("Mutated", "Not-mutated"), 333, replace=TRUE)),
+                   location  = c(sample(c("Frontal", "Non-frontal"), 333, replace=TRUE)),
+                   histology = c(sample(c("Astrocytoma ", "Oligodendroglioma", "Oligoastrocytoma", "Glioblastoma"), 333, replace=TRUE)),
+                   dexa  = c(sample(c("No", "Yes"), 333, replace=TRUE)),
+                   phase_disease  = c(sample(c("Baseline", "Treatment", "Stable", "Progression"), 333, replace=TRUE)),
+                   ct_before_assessment   = c(sample(c("No", "Yes"), 333, replace=TRUE)),
+                   ct_before_assessment  = c(sample(c("No", "Yes"), 333, replace=TRUE)))
+```
+
+### Longitudinal subgroup
+```{r}
+set.seed(1234)
+
+df_icc <- data.frame (random_id = c(1:70),
+                   #preoperative PROMs  
+                   CIS_total_preop = c(sample(20:140, 70, replace=TRUE)),
+                   CIS_fatigue_preop  = c(sample(8:56, 70, replace=TRUE)),
+                   CIS_concentration_preop = c(sample(5:34, 70, replace=TRUE)),
+                   CIS_motivation_preop = c(sample(4:28, 70, replace=TRUE)),
+                   CIS_activity_preop = c(sample(3:21, 70, replace=TRUE)),
+                   SF36_PF_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_SC_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_RLP_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_RLM_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_MH_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_P_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_HP_preop = c(sample(0:100, 70, replace=TRUE)),
+                   SF36_CIH_preop = c(sample(0:100, 70, replace=TRUE)),
+                   CESD_total_preop = c(sample(0:100, 70, replace=TRUE)),
+                   mos_cog_preop = c(sample(11:36, 70, replace=TRUE)),
+                   BN20_FU_preop  = c(sample(0:100, 70, replace=TRUE)),
+                   BN20_MD_preop   = c(sample(0:100, 70, replace=TRUE)),
+                   BN20_S_preop  = c(sample(0:100, 70, replace=TRUE)),
+                   #post-operative PROMs  
+                   CIS_fatigue_postop  = c(sample(8:56, 70, replace=TRUE)),
+                   #other variables
+                   side = c(sample(c("left", "right"), 70, replace=TRUE)),
+                   kps_preop = c(sample(c("70-80", "90-100"), 70, replace=TRUE)),
+                   sex = c(sample(c("female", "male"), 70, replace=TRUE)),
+                   age = c(sample(c(18:81), 70, replace=TRUE)),
+                   verhage = c(sample(c("Low (1-4)", "Middle (5)", "High (6-7)"), 70, replace=TRUE)),
+                   idh = c(sample(c("Mutated", "Not-mutated"), 70, replace=TRUE)),
+                   location  = c(sample(c("Frontal", "Non-frontal"), 70, replace=TRUE)),
+                   histology = c(sample(c("Astrocytoma ", "Oligodendroglioma", "Oligoastrocytoma", "Glioblastoma"), 70, replace=TRUE)),
+                   dexa_preop  = c(sample(c("No", "Yes"), 70, replace=TRUE)),
+                   ct_before_assessment_postop   = c(sample(c("No", "Yes"), 70, replace=TRUE)),
+                   ct_before_assessment_postop  = c(sample(c("No", "Yes"), 70, replace=TRUE)))
+```
+
+# 2. Percentages of fatigued patients
+
+Calculate the number of severely fatigued patients in the Glioma cohort
+```{r}
+#All patients
+severely_fatigued_yes_no <- count(df$CIS_fatigue>34)
+percentage_severly_fatigued<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
+percentage_severly_fatigued
+
+#Preoperative
+df_preok <- filter(df, assessment == "Pre-operative") 
+severely_fatigued_yes_no_preok <- count(df_preok$CIS_fatigue>34)
+percentage_severly_fatigued_preok<-(severely_fatigued_yes_no_preok[2,2])/(severely_fatigued_yes_no_preok[1,2]+severely_fatigued_yes_no_preok[2,2])*100
+percentage_severly_fatigued_preok
+
+#Postoperative
+df_postok <- filter(df, assessment == "Post-operative")
+severely_fatigued_yes_no_postok <- count(df_postok$CIS_fatigue>34)
+percentage_severly_fatigued_postok<-(severely_fatigued_yes_no_postok[2,2])/(severely_fatigued_yes_no_postok[1,2]+severely_fatigued_yes_no_postok[2,2])*100
+percentage_severly_fatigued_postok
+
+# Treatment
+treatment <- df %>% dplyr::filter(phase_disease== "Treatment")
+severely_fatigued_yes_no <- count(treatment$CIS_fatigue>34)
+percentage_severly_fatigued_treatment<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
+percentage_severly_fatigued_treatment
+
+# Stable disease
+stable <- df %>% dplyr::filter(phase_disease== "Stable")
+severely_fatigued_yes_no <- count(stable$CIS_fatigue>34)
+percentage_severly_fatigued_stable<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
+percentage_severly_fatigued_stable
+
+# Progression
+progression <- df %>% dplyr::filter(phase_disease== "Progression")
+severely_fatigued_yes_no <- count(progression$CIS_fatigue>34)
+percentage_severly_fatigued_progression <-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
+percentage_severly_fatigued_progression
+```
+
+Calculate the number of severely fatigued patients in the Longitudinal subgroup
+```{r}
+#Preoperative
+severely_fatigued_yes_no_preok <- count(df_icc$CIS_fatigue_preop>34)
+percentage_severly_fatigued_preok<-(severely_fatigued_yes_no_preok[2,2])/(severely_fatigued_yes_no_preok[1,2]+severely_fatigued_yes_no_preok[2,2])*100
+percentage_severly_fatigued_preok
+
+#Postoperative
+severely_fatigued_yes_no_postok <- count(df_icc$CIS_fatigue_postop>34)
+percentage_severly_fatigued_postok<-(severely_fatigued_yes_no_postok[2,2])/(severely_fatigued_yes_no_postok[1,2]+severely_fatigued_yes_no_postok[2,2])*100
+percentage_severly_fatigued_postok
+```
+
+# 3. Raincloudplots Glioma Cohort
+
+Used repository: https://github.com/jorvlan/raincloudplots
+
+Here the code for a raincloudplot is provided. Change the variable according to the desired variable.
+In the paper we present the variabels: CIS_total, CIS_fatigue, CIS_motivation, CIS_concentration, CIS_activity.
+
+#### Format data
+```{r}
+df_1x1 <- data_1x1(
+  array_1 = df_preok$CIS_total, #change variable
+  array_2 = df_postok$CIS_total, #change variable
+  jit_distance = .09,
+  jit_seed = 321)
+```
+
+#### Make the figure
+```{r}
+raincloud_figure <- raincloud_1x1_repmes(
+  data = df_1x1,
+  colors = (c('#73716c','#73716c')), 
+  fills = (c('#73716c','#73716c')), 
+  line_color = '#73716c',
+  line_alpha = .4,
+  size = 2,
+  alpha = .4,
+  align_clouds = FALSE) +
+  geom_hline(yintercept=76,linetype="dashed", color="#73716c")+  
+  scale_x_continuous(breaks=c(0.7,2.3), labels=c("Preoperative", "Postoperative"), limits=c(0, 3)) + 
+  scale_y_continuous(limits=c(20, 140)) + #change scale y-axis
+  xlab(NULL)+
+  ylab("CIS total score") + #change ylab
+  theme_classic(base_size = 18)
+
+raincloud_figure
+```
+
+# 4. Linear mixed model Glioma Cohort
+
+Check what probability distribution best fits the CIS_fatigue: 
+
+```{r}
+df$CIS_fatigue.t <- df$CIS_fatigue + 1
+qqp(df$CIS_fatigue.t, "norm")
+qqp(df$CIS_fatigue.t, "lnorm")
+
+nbinom <- fitdistr(df$CIS_fatigue.t, "Negative Binomial")
+qqp(df$CIS_fatigue.t, "nbinom", size = nbinom$estimate[[1]], mu = nbinom$estimate[[2]])
+
+poisson <- fitdistr(df$CIS_fatigue.t, "Poisson")
+qqp(df$CIS_fatigue.t, "pois", poisson$estimate)
+
+gamma <- fitdistr(df$CIS_fatigue.t, "gamma")
+qqp(df$CIS_fatigue.t, "gamma", shape = gamma$estimate[[1]], rate = gamma$estimate[[2]])
+```
+Indeed a normal distribution
+
+#### STEP 1 LMM: for each individual variable, check if there is an association. (See table 2 in manuscript)
+
+If there is an association, then this variable is used in step 2.
+```{r, message=FALSE}
+vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "phase_disease", "ct_before_assessment", "ct_before_assessment")
+
+#lapply loop to compute a linear mixed model (lmm) for all the variables separately
+lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
+  form = paste("CIS_fatigue ~ ", var, "+ (1|random_id)")
+  lmer(form, data=df,REML = FALSE)
+})
+
+summary(lmm_individual_variable[[2]])  #change the number to see the other variabels. Number of myvars=26.
+```
+
+See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, phase_disease, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
+
+#### STEP 2 LMM
+This model includes the variables that show a significant univariate association. 
+```{r}
+no.na.data <- na.omit(df[c("CIS_fatigue", "sex", "CESD_total",  "mos_cog","kps", "SF36_PF","SF36_MH" ,"SF36_HP", "SF36_SC","SF36_P","SF36_RLP","SF36_RLM" ,"SF36_CIH","BN20_MD","BN20_S" ,"BN20_FU", "verhage","side", "random_id")])
+
+modelall <- lmer(CIS_fatigue ~ 
+sex+ CESD_total+mos_cog+ kps+ SF36_PF+ SF36_MH + SF36_HP+ SF36_SC+ SF36_P +  
+SF36_RLP+ SF36_RLM +SF36_CIH+BN20_MD +BN20_S +BN20_FU+ verhage+side
+                   + (1 | random_id), data = no.na.data,
+    REML = FALSE)
+
+summary(modelall)
+```
+
+#### STEP 3: the final model - LMM
+
+Perform backward selection using the step test from the lmerTest package.
+```{r}
+step_model <- step(modelall)
+step_model
+```
+
+```{r}
+finalmodel <- lmer(CIS_fatigue ~ 
+SF36_RLP+ 
+  SF36_PF+
+  SF36_HP+
+  SF36_SC+
+  CESD_total+ 
+  side
+                 + (1 | random_id), data = df,
+    REML = FALSE)
+
+summary(finalmodel)
+r.squaredGLMM(finalmodel)
+```
+
+See Table 3. Determinants of fatigue severity in manuscript.
+
+# 5. ICC longitudinal subgroup 
+
+```{r}
+icc(df_icc[ , c("CIS_fatigue_preop", "CIS_fatigue_postop") ], model="twoway", type="agreement", unit="single")
+```
+
+# 6. Change plot longitudinal subgroup 
+Regarding the Longitudinal subgroup.
+
+##### Make a delta score and define whether values can be classified as change or not
+```{r}
+df_icc$delta_cisf = df_icc$CIS_fatigue_preop - df_icc$CIS_fatigue_postop
+
+df_icc$Legend = ifelse(df_icc$delta_cisf >6.9, "Clinically significant improvement",
+                  ifelse(df_icc$delta_cisf <(-6.9), "Deteroration", 
+                  ifelse(df_icc$delta_cisf<7 & df_icc$delta_cisf> (-7), "Minimal change", "Unknown")))
+count(df_icc$Legend)
+```
+
+##### Fig 2. Change in fatigue severity scores between baseline and second assessment
+```{r}
+df_plot<- df_icc %>% dplyr::select(CIS_fatigue_preop, CIS_fatigue_postop, Legend) %>% na.omit()
+
+change_plot <- ggplot(df_plot, aes(CIS_fatigue_preop, CIS_fatigue_postop))+
+    geom_point(aes(colour = Legend, shape = Legend), position = "jitter", size = 3) +
+    geom_hline(yintercept=35,linetype="dashed", color="darkgrey")+  
+    geom_vline(xintercept=35,linetype="dashed", color="darkgrey")+  
+  xlab("Pre-surgery CIS fatigue severity")+
+  ylab("Post-surgery CIS fatigue assessment")+
+  theme_classic()
+
+change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
+```
+
+
+# 7. Multiple linear regression
+
+Find predictors of postoperative CIS-fatigue with the df_icc = longitudinal subgroup.
+
+#### STEP 1 MLR
+```{r}
+myvars <- c("CIS_fatigue_preop", "CIS_concentration_preop", "CIS_motivation_preop", "CIS_activity_preop", "SF36_PF_preop", "SF36_SC_preop", "SF36_RLP_preop", "SF36_RLM_preop", "SF36_MH_preop", "SF36_P_preop", "SF36_HP_preop", "SF36_CIH_preop", "mos_cog_preop", "CESD_total_preop", "BN20_FU_preop", "BN20_MD_preop", "BN20_S_preop", "sex", "age", "verhage", "idh", "side","location", "histology", "dexa_preop" , "kps_preop", "ct_before_assessment_postop", "ct_before_assessment_postop")
+
+linear_regression_individual_variable <- lapply(myvars, function(dvar) lm(eval(paste0(' CIS_fatigue_postop ~ ', dvar)), data = df_icc))
+
+summary(linear_regression_individual_variable[[1]]) #change the number to see the other variabels. Number of myvars=28.
+```
+
+Variables to exclude for the next step: BN20_S_preop, age, verhage, sex, idh, side, location, histology, dexa_preop, kps_preop, ct_before_assessment_postop, radiotherapy
+
+#### STEP 2 MLR
+Before backward selection:
+```{r}
+no.na.data_icc <- na.omit(df_icc[c("CIS_fatigue_postop", "CIS_fatigue_preop", "CIS_concentration_preop", "CIS_motivation_preop", "CIS_activity_preop", "SF36_PF_preop", "SF36_SC_preop", "SF36_RLP_preop","SF36_RLM_preop", "SF36_MH_preop", "SF36_P_preop", "SF36_HP_preop", "SF36_CIH_preop", "mos_cog_preop", "CESD_total_preop", "BN20_FU_preop", "BN20_MD_preop")])
+
+model <- lm(CIS_fatigue_postop ~
+CIS_fatigue_preop+
+CIS_concentration_preop+
+CIS_motivation_preop+
+CIS_activity_preop+
+SF36_PF_preop+
+SF36_SC_preop+  
+SF36_RLP_preop+
+SF36_RLM_preop+
+SF36_MH_preop+
+SF36_P_preop+
+SF36_HP_preop+
+SF36_CIH_preop+  
+mos_cog_preop+
+CESD_total_preop+
+BN20_FU_preop+
+BN20_MD_preop,
+            data = no.na.data_icc) 
+
+summary(model)
+```
+
+# STEP 3: backward selection
+
+```{r}
+backward_lmr_model <- stepAIC(model, direction = "backward", 
+                      trace = FALSE)
+
+backward_lmr_model$coefficients #variables to include in final model
+```
+
+The final model after backward selection:
+```{r}
+final_model <- lm(CIS_fatigue_postop ~
+CIS_fatigue_preop+
+SF36_PF_preop,
+            data = df_icc) 
+
+summary(final_model)
+```
