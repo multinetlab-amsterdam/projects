@@ -44,11 +44,11 @@ library(irr)
 library(car)
 library(MASS)
 library(MuMIn)
-library(lmerTest) #vb deze library toevoegen
+library(lmerTest)
 ```
 
 # 1. Synthesizing mock datasets
-The analyses in the 2022 fatigue paper consist of the Glioma Cohort and a subgroup, the Longitudinal subgroup. Here we provide mock data to run the analyses with. The data does not reflect the real distrubution #vb spelfout of the actual data, therefor#vb spelfout the results produced in this script should merely be used to understand the analyses itself.
+The analyses in the 2022 fatigue paper consist of the Glioma Cohort and a subgroup, the Longitudinal subgroup. Here we provide mock data to run the analyses with. The data does not reflect the real distribution of the actual data, therefore the results produced in this script should merely be used to understand the analyses itself.
 
 ### Glioma cohort
 ```{r}
@@ -126,11 +126,9 @@ df_icc <- data.frame (random_id = c(1:70),
                    dexa_preop  = c(sample(c("No", "Yes"), 70, replace=TRUE)),
                    ct_before_assessment_postop   = c(sample(c("No", "Yes"), 70, replace=TRUE)),
                    ct_before_assessment_postop  = c(sample(c("No", "Yes"), 70, replace=TRUE)))
-
-#vb geen postop patienten nodig in longitudinal sample?
 ```
 
-# 2. percentages of fatigued patients #vb ook hoofdletter begin zin?
+# 2. Percentages of fatigued patients
 
 Calculate the number of severely fatigued patients in the Glioma cohort
 ```{r}
@@ -193,8 +191,8 @@ In the paper we present the variabels: CIS_total, CIS_fatigue, CIS_motivation, C
 #### Format data
 ```{r}
 df_1x1 <- data_1x1(
-  array_1 = df_preok$CIS_fatigue, #change variabel #vb variable in english
-  array_2 = df_postok$CIS_fatigue, #change variabel  #vb variable in english
+  array_1 = df_preok$CIS_total, #change variable
+  array_2 = df_postok$CIS_total, #change variable
   jit_distance = .09,
   jit_seed = 321)
 ```
@@ -211,18 +209,16 @@ raincloud_figure <- raincloud_1x1_repmes(
   alpha = .4,
   align_clouds = FALSE) +
   geom_hline(yintercept=76,linetype="dashed", color="#73716c")+  
-  scale_x_continuous(breaks=c(0.7,2.3), labels=c("Preoperative", "Postoperative"), limits=c(0, 3)) +
-  scale_y_continuous(limits=c(20, 140)) +
+  scale_x_continuous(breaks=c(0.7,2.3), labels=c("Preoperative", "Postoperative"), limits=c(0, 3)) + 
+  scale_y_continuous(limits=c(20, 140)) + #change scale y-axis
   xlab(NULL)+
-  ylab("CIS total score") +
+  ylab("CIS total score") + #change ylab
   theme_classic(base_size = 18)
 
 raincloud_figure
-
-#vb also change y axis with different variables
 ```
 
-# 4. linear mixed model Glioma Cohort #vb hoofdletter begin zin
+# 4. Linear mixed model Glioma Cohort
 
 Check what probability distribution best fits the CIS_fatigue: 
 
@@ -235,7 +231,7 @@ nbinom <- fitdistr(df$CIS_fatigue.t, "Negative Binomial")
 qqp(df$CIS_fatigue.t, "nbinom", size = nbinom$estimate[[1]], mu = nbinom$estimate[[2]])
 
 poisson <- fitdistr(df$CIS_fatigue.t, "Poisson")
-#qqp(df$CIS_fatigue.t, "pois", poisson$estimate)
+qqp(df$CIS_fatigue.t, "pois", poisson$estimate)
 
 gamma <- fitdistr(df$CIS_fatigue.t, "gamma")
 qqp(df$CIS_fatigue.t, "gamma", shape = gamma$estimate[[1]], rate = gamma$estimate[[2]])
@@ -254,12 +250,10 @@ lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
   lmer(form, data=df,REML = FALSE)
 })
 
-summary(lmm_individual_variable[[4]])  #change the number to see the other variabels. Number of myvars=26.
+summary(lmm_individual_variable[[2]])  #change the number to see the other variabels. Number of myvars=26.
 ```
 
-See table 2 in manuscript. Variabels to exclude for the next step: age, dexa, location, idh, histology, phase_disease, ct_before_assessment, ct_before_assessment, grade assessment
-
-#vb consider excluding the variables based on your created data to check if you excluded the correct variables according to your methods --> maybe not possible I checked 8, all with a high p-value.  
+See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, phase_disease, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
 
 #### STEP 2 LMM
 This model includes the variables that show a significant univariate association. 
@@ -335,7 +329,7 @@ change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
 ```
 
 
-# 7. multiple linear regression #vb hoofdletter
+# 7. Multiple linear regression
 
 Find predictors of postoperative CIS-fatigue with the df_icc = longitudinal subgroup.
 
