@@ -1,6 +1,6 @@
 The scripts posted here were used in [papertitle]().
 
-For privacy reasons, we cannot share the raw data alongisde with the scripts. Therefore, our aim here was to post a general version of the computations, allowing readers to understand how we computed the different parts of the analysis.
+For privacy reasons, we cannot share the raw data alongisde the scripts. Therefore, our aim here was to post a general version of the computations, allowing readers to understand how we computed the different parts of the analysis.
 
 Step 1: Running the model
 - run_model.m: /Please detail here this step/
