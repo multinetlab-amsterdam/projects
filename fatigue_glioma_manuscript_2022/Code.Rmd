@@ -83,7 +83,7 @@ df <- data.frame (random_id = c(1:222, 1:111),
                    location  = c(sample(c("Frontal", "Non-frontal"), 333, replace=TRUE)),
                    histology = c(sample(c("Astrocytoma ", "Oligodendroglioma", "Oligoastrocytoma", "Glioblastoma"), 333, replace=TRUE)),
                    dexa  = c(sample(c("No", "Yes"), 333, replace=TRUE)),
-                   phase_disease  = c(sample(c("Baseline", "Treatment", "Stable", "Progression"), 333, replace=TRUE)),
+                   disease_status  = c(sample(c("Baseline", "Treatment", "Stable", "Progression"), 333, replace=TRUE)),
                    ct_before_assessment   = c(sample(c("No", "Yes"), 333, replace=TRUE)),
                    ct_before_assessment  = c(sample(c("No", "Yes"), 333, replace=TRUE)))
 ```
@@ -150,19 +150,19 @@ percentage_severly_fatigued_postok<-(severely_fatigued_yes_no_postok[2,2])/(seve
 percentage_severly_fatigued_postok
 
 # Treatment
-treatment <- df %>% dplyr::filter(phase_disease== "Treatment")
+treatment <- df %>% dplyr::filter(disease_status== "Treatment")
 severely_fatigued_yes_no <- count(treatment$CIS_fatigue>34)
 percentage_severly_fatigued_treatment<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
 percentage_severly_fatigued_treatment
 
 # Stable disease
-stable <- df %>% dplyr::filter(phase_disease== "Stable")
+stable <- df %>% dplyr::filter(disease_status== "Stable")
 severely_fatigued_yes_no <- count(stable$CIS_fatigue>34)
 percentage_severly_fatigued_stable<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
 percentage_severly_fatigued_stable
 
 # Progression
-progression <- df %>% dplyr::filter(phase_disease== "Progression")
+progression <- df %>% dplyr::filter(disease_status== "Progression")
 severely_fatigued_yes_no <- count(progression$CIS_fatigue>34)
 percentage_severly_fatigued_progression <-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
 percentage_severly_fatigued_progression
@@ -242,7 +242,7 @@ Indeed a normal distribution
 
 If there is an association, then this variable is used in step 2.
 ```{r, message=FALSE}
-vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "phase_disease", "ct_before_assessment", "ct_before_assessment")
+vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "disease_status", "ct_before_assessment", "ct_before_assessment")
 
 #lapply loop to compute a linear mixed model (lmm) for all the variables separately
 lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
@@ -253,7 +253,7 @@ lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
 summary(lmm_individual_variable[[2]])  #change the number to see the other variabels. Number of myvars=26.
 ```
 
-See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, phase_disease, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
+See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, disease_status, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
 
 #### STEP 2 LMM
 This model includes the variables that show a significant univariate association. 
