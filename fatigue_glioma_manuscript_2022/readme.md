@@ -3,4 +3,4 @@
 
 The script used in the following pre-print: EDIT
 
-This  script first generates synthetic data. With this data the analyses can be performed. The results generated with this data do not resemble the actual results. therefore this script should merely be used to understand the statistical analyses and not to reproduce the results in the manuscript.
+This  script first generates synthetic data. With this data the analyses can be performed. The results generated with this data do not resemble the actual results in the paper. Therefore this script should merely be used to understand the statistical analyses and not to reproduce the results in the manuscript.
