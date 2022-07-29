@@ -28,9 +28,9 @@ It consists of several parts:
 2. Percentages of fatigued patients
 3. Raincloudplots - Glioma Cohort
 4. Linear mixed model - Glioma Cohort
-5. Icc - Longitudinal subgroup
+5. Multiple linear regression - Longitudinal subgroup
 6. Change plot - Longitudinal subgroup
-7. Multiple linear regression - Longitudinal subgroup
+7. Icc - Longitudinal subgroup
 
 #### Load libraries
 
@@ -294,42 +294,7 @@ r.squaredGLMM(finalmodel)
 
 See Table 3. Determinants of fatigue severity in manuscript.
 
-# 5. ICC longitudinal subgroup 
-
-```{r}
-icc(df_icc[ , c("CIS_fatigue_preop", "CIS_fatigue_postop") ], model="twoway", type="agreement", unit="single")
-```
-
-# 6. Change plot longitudinal subgroup 
-Regarding the Longitudinal subgroup.
-
-##### Make a delta score and define whether values can be classified as change or not
-```{r}
-df_icc$delta_cisf = df_icc$CIS_fatigue_preop - df_icc$CIS_fatigue_postop
-
-df_icc$Legend = ifelse(df_icc$delta_cisf >6.9, "Clinically significant improvement",
-                  ifelse(df_icc$delta_cisf <(-6.9), "Deteroration", 
-                  ifelse(df_icc$delta_cisf<7 & df_icc$delta_cisf> (-7), "Minimal change", "Unknown")))
-count(df_icc$Legend)
-```
-
-##### Fig 2. Change in fatigue severity scores between baseline and second assessment
-```{r}
-df_plot<- df_icc %>% dplyr::select(CIS_fatigue_preop, CIS_fatigue_postop, Legend) %>% na.omit()
-
-change_plot <- ggplot(df_plot, aes(CIS_fatigue_preop, CIS_fatigue_postop))+
-    geom_point(aes(colour = Legend, shape = Legend), position = "jitter", size = 3) +
-    geom_hline(yintercept=35,linetype="dashed", color="darkgrey")+  
-    geom_vline(xintercept=35,linetype="dashed", color="darkgrey")+  
-  xlab("Pre-surgery CIS fatigue severity")+
-  ylab("Post-surgery CIS fatigue assessment")+
-  theme_classic()
-
-change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
-```
-
-
-# 7. Multiple linear regression
+# 5. Multiple linear regression
 
 Find predictors of postoperative CIS-fatigue with the df_icc = longitudinal subgroup.
 
@@ -388,4 +353,38 @@ SF36_PF_preop,
             data = df_icc) 
 
 summary(final_model)
+```
+
+# 6. Change plot longitudinal subgroup 
+Regarding the Longitudinal subgroup.
+
+##### Make a delta score and define whether values can be classified as change or not
+```{r}
+df_icc$delta_cisf = df_icc$CIS_fatigue_preop - df_icc$CIS_fatigue_postop
+
+df_icc$Legend = ifelse(df_icc$delta_cisf >6.9, "Clinically significant improvement",
+                  ifelse(df_icc$delta_cisf <(-6.9), "Deteroration", 
+                  ifelse(df_icc$delta_cisf<7 & df_icc$delta_cisf> (-7), "Minimal change", "Unknown")))
+count(df_icc$Legend)
+```
+
+##### Fig 2. Change in fatigue severity scores between baseline and second assessment
+```{r}
+df_plot<- df_icc %>% dplyr::select(CIS_fatigue_preop, CIS_fatigue_postop, Legend) %>% na.omit()
+
+change_plot <- ggplot(df_plot, aes(CIS_fatigue_preop, CIS_fatigue_postop))+
+    geom_point(aes(colour = Legend, shape = Legend), position = "jitter", size = 3) +
+    geom_hline(yintercept=35,linetype="dashed", color="darkgrey")+  
+    geom_vline(xintercept=35,linetype="dashed", color="darkgrey")+  
+  xlab("Pre-surgery CIS fatigue severity")+
+  ylab("Post-surgery CIS fatigue assessment")+
+  theme_classic()
+
+change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
+```
+
+# 7. ICC longitudinal subgroup 
+
+```{r}
+icc(df_icc[ , c("CIS_fatigue_preop", "CIS_fatigue_postop") ], model="twoway", type="agreement", unit="single")
 ```
