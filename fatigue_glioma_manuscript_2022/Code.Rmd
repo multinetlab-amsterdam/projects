@@ -10,7 +10,7 @@ output: html_document
 Analyses of the 2022 manuscript on fatigue in glioma patients.
 
 ##### Status: 
-Under revision
+Finished
 
 ##### Review History
 Reviewed by: Vera Belgers
