@@ -10,7 +10,7 @@ output: html_document
 Analyses of the 2022 manuscript on fatigue in glioma patients.
 
 ##### Status: 
-Under revision
+Finished
 
 ##### Review History
 Reviewed by: Vera Belgers
@@ -28,9 +28,9 @@ It consists of several parts:
 2. Percentages of fatigued patients
 3. Raincloudplots - Glioma Cohort
 4. Linear mixed model - Glioma Cohort
-5. Icc - Longitudinal subgroup
+5. Multiple linear regression - Longitudinal subgroup
 6. Change plot - Longitudinal subgroup
-7. Multiple linear regression - Longitudinal subgroup
+7. Icc - Longitudinal subgroup
 
 #### Load libraries
 
@@ -83,7 +83,7 @@ df <- data.frame (random_id = c(1:222, 1:111),
                    location  = c(sample(c("Frontal", "Non-frontal"), 333, replace=TRUE)),
                    histology = c(sample(c("Astrocytoma ", "Oligodendroglioma", "Oligoastrocytoma", "Glioblastoma"), 333, replace=TRUE)),
                    dexa  = c(sample(c("No", "Yes"), 333, replace=TRUE)),
-                   phase_disease  = c(sample(c("Baseline", "Treatment", "Stable", "Progression"), 333, replace=TRUE)),
+                   disease_status  = c(sample(c("Baseline", "Treatment", "Stable", "Progression"), 333, replace=TRUE)),
                    ct_before_assessment   = c(sample(c("No", "Yes"), 333, replace=TRUE)),
                    ct_before_assessment  = c(sample(c("No", "Yes"), 333, replace=TRUE)))
 ```
@@ -150,19 +150,19 @@ percentage_severly_fatigued_postok<-(severely_fatigued_yes_no_postok[2,2])/(seve
 percentage_severly_fatigued_postok
 
 # Treatment
-treatment <- df %>% dplyr::filter(phase_disease== "Treatment")
+treatment <- df %>% dplyr::filter(disease_status== "Treatment")
 severely_fatigued_yes_no <- count(treatment$CIS_fatigue>34)
 percentage_severly_fatigued_treatment<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
 percentage_severly_fatigued_treatment
 
 # Stable disease
-stable <- df %>% dplyr::filter(phase_disease== "Stable")
+stable <- df %>% dplyr::filter(disease_status== "Stable")
 severely_fatigued_yes_no <- count(stable$CIS_fatigue>34)
 percentage_severly_fatigued_stable<-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
 percentage_severly_fatigued_stable
 
 # Progression
-progression <- df %>% dplyr::filter(phase_disease== "Progression")
+progression <- df %>% dplyr::filter(disease_status== "Progression")
 severely_fatigued_yes_no <- count(progression$CIS_fatigue>34)
 percentage_severly_fatigued_progression <-(severely_fatigued_yes_no[2,2])/(severely_fatigued_yes_no[1,2]+severely_fatigued_yes_no[2,2])*100
 percentage_severly_fatigued_progression
@@ -242,7 +242,7 @@ Indeed a normal distribution
 
 If there is an association, then this variable is used in step 2.
 ```{r, message=FALSE}
-vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "phase_disease", "ct_before_assessment", "ct_before_assessment")
+vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "disease_status", "ct_before_assessment", "ct_before_assessment")
 
 #lapply loop to compute a linear mixed model (lmm) for all the variables separately
 lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
@@ -253,7 +253,7 @@ lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
 summary(lmm_individual_variable[[2]])  #change the number to see the other variabels. Number of myvars=26.
 ```
 
-See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, phase_disease, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
+See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, disease_status, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
 
 #### STEP 2 LMM
 This model includes the variables that show a significant univariate association. 
@@ -294,42 +294,7 @@ r.squaredGLMM(finalmodel)
 
 See Table 3. Determinants of fatigue severity in manuscript.
 
-# 5. ICC longitudinal subgroup 
-
-```{r}
-icc(df_icc[ , c("CIS_fatigue_preop", "CIS_fatigue_postop") ], model="twoway", type="agreement", unit="single")
-```
-
-# 6. Change plot longitudinal subgroup 
-Regarding the Longitudinal subgroup.
-
-##### Make a delta score and define whether values can be classified as change or not
-```{r}
-df_icc$delta_cisf = df_icc$CIS_fatigue_preop - df_icc$CIS_fatigue_postop
-
-df_icc$Legend = ifelse(df_icc$delta_cisf >6.9, "Clinically significant improvement",
-                  ifelse(df_icc$delta_cisf <(-6.9), "Deteroration", 
-                  ifelse(df_icc$delta_cisf<7 & df_icc$delta_cisf> (-7), "Minimal change", "Unknown")))
-count(df_icc$Legend)
-```
-
-##### Fig 2. Change in fatigue severity scores between baseline and second assessment
-```{r}
-df_plot<- df_icc %>% dplyr::select(CIS_fatigue_preop, CIS_fatigue_postop, Legend) %>% na.omit()
-
-change_plot <- ggplot(df_plot, aes(CIS_fatigue_preop, CIS_fatigue_postop))+
-    geom_point(aes(colour = Legend, shape = Legend), position = "jitter", size = 3) +
-    geom_hline(yintercept=35,linetype="dashed", color="darkgrey")+  
-    geom_vline(xintercept=35,linetype="dashed", color="darkgrey")+  
-  xlab("Pre-surgery CIS fatigue severity")+
-  ylab("Post-surgery CIS fatigue assessment")+
-  theme_classic()
-
-change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
-```
-
-
-# 7. Multiple linear regression
+# 5. Multiple linear regression
 
 Find predictors of postoperative CIS-fatigue with the df_icc = longitudinal subgroup.
 
@@ -388,4 +353,38 @@ SF36_PF_preop,
             data = df_icc) 
 
 summary(final_model)
+```
+
+# 6. Change plot longitudinal subgroup 
+Regarding the Longitudinal subgroup.
+
+##### Make a delta score and define whether values can be classified as change or not
+```{r}
+df_icc$delta_cisf = df_icc$CIS_fatigue_preop - df_icc$CIS_fatigue_postop
+
+df_icc$Legend = ifelse(df_icc$delta_cisf >6.9, "Clinically significant improvement",
+                  ifelse(df_icc$delta_cisf <(-6.9), "Deteroration", 
+                  ifelse(df_icc$delta_cisf<7 & df_icc$delta_cisf> (-7), "Minimal change", "Unknown")))
+count(df_icc$Legend)
+```
+
+##### Fig 2. Change in fatigue severity scores between baseline and second assessment
+```{r}
+df_plot<- df_icc %>% dplyr::select(CIS_fatigue_preop, CIS_fatigue_postop, Legend) %>% na.omit()
+
+change_plot <- ggplot(df_plot, aes(CIS_fatigue_preop, CIS_fatigue_postop))+
+    geom_point(aes(colour = Legend, shape = Legend), position = "jitter", size = 3) +
+    geom_hline(yintercept=35,linetype="dashed", color="darkgrey")+  
+    geom_vline(xintercept=35,linetype="dashed", color="darkgrey")+  
+  xlab("Preoperative CIS fatigue severity")+
+  ylab("Postoperative CIS fatigue assessment")+
+  theme_classic()
+
+change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
+```
+
+# 7. ICC longitudinal subgroup 
+
+```{r}
+icc(df_icc[ , c("CIS_fatigue_preop", "CIS_fatigue_postop") ], model="twoway", type="agreement", unit="single")
 ```
