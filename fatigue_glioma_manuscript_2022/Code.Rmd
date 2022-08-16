@@ -85,7 +85,7 @@ df <- data.frame (random_id = c(1:222, 1:111),
                    dexa  = c(sample(c("No", "Yes"), 333, replace=TRUE)),
                    disease_status  = c(sample(c("Baseline", "Treatment", "Stable", "Progression"), 333, replace=TRUE)),
                    ct_before_assessment   = c(sample(c("No", "Yes"), 333, replace=TRUE)),
-                   ct_before_assessment  = c(sample(c("No", "Yes"), 333, replace=TRUE)))
+                   rt_before_assessment  = c(sample(c("No", "Yes"), 333, replace=TRUE)))
 ```
 
 ### Longitudinal subgroup
@@ -125,7 +125,7 @@ df_icc <- data.frame (random_id = c(1:70),
                    histology = c(sample(c("Astrocytoma ", "Oligodendroglioma", "Oligoastrocytoma", "Glioblastoma"), 70, replace=TRUE)),
                    dexa_preop  = c(sample(c("No", "Yes"), 70, replace=TRUE)),
                    ct_before_assessment_postop   = c(sample(c("No", "Yes"), 70, replace=TRUE)),
-                   ct_before_assessment_postop  = c(sample(c("No", "Yes"), 70, replace=TRUE)))
+                   rt_before_assessment_postop  = c(sample(c("No", "Yes"), 70, replace=TRUE)))
 ```
 
 # 2. Percentages of fatigued patients
@@ -242,7 +242,7 @@ Indeed a normal distribution
 
 If there is an association, then this variable is used in step 2.
 ```{r, message=FALSE}
-vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "disease_status", "ct_before_assessment", "ct_before_assessment")
+vars = c("SF36_PF", "SF36_SC", "SF36_RLP", "SF36_RLM", "SF36_MH", "SF36_P", "SF36_HP", "SF36_CIH", "CESD_total", "mos_cog",  "BN20_FU", "BN20_MD", "BN20_S", "side", "kps", "sex", "age", "verhage", "idh", "location", "assessment", "histology", "dexa" , "disease_status", "ct_before_assessment", "rt_before_assessment")
 
 #lapply loop to compute a linear mixed model (lmm) for all the variables separately
 lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
@@ -253,7 +253,7 @@ lmm_individual_variable = lapply(setNames(vars, vars), function(var) {
 summary(lmm_individual_variable[[2]])  #change the number to see the other variabels. Number of myvars=26.
 ```
 
-See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, disease_status, ct_before_assessment, ct_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
+See table 2 in manuscript. Variables to exclude for the next step: age, dexa, location, idh, histology, disease_status, ct_before_assessment, rt_before_assessment, grade assessment. Of course, since this script runs with mock data, the p-values and estimates so not reflect the values in the manuscript. 
 
 #### STEP 2 LMM
 This model includes the variables that show a significant univariate association. 
@@ -300,14 +300,14 @@ Find predictors of postoperative CIS-fatigue with the df_icc = longitudinal subg
 
 #### STEP 1 MLR
 ```{r}
-myvars <- c("CIS_fatigue_preop", "CIS_concentration_preop", "CIS_motivation_preop", "CIS_activity_preop", "SF36_PF_preop", "SF36_SC_preop", "SF36_RLP_preop", "SF36_RLM_preop", "SF36_MH_preop", "SF36_P_preop", "SF36_HP_preop", "SF36_CIH_preop", "mos_cog_preop", "CESD_total_preop", "BN20_FU_preop", "BN20_MD_preop", "BN20_S_preop", "sex", "age", "verhage", "idh", "side","location", "histology", "dexa_preop" , "kps_preop", "ct_before_assessment_postop", "ct_before_assessment_postop")
+myvars <- c("CIS_fatigue_preop", "CIS_concentration_preop", "CIS_motivation_preop", "CIS_activity_preop", "SF36_PF_preop", "SF36_SC_preop", "SF36_RLP_preop", "SF36_RLM_preop", "SF36_MH_preop", "SF36_P_preop", "SF36_HP_preop", "SF36_CIH_preop", "mos_cog_preop", "CESD_total_preop", "BN20_FU_preop", "BN20_MD_preop", "BN20_S_preop", "sex", "age", "verhage", "idh", "side","location", "histology", "dexa_preop" , "kps_preop", "ct_before_assessment_postop", "rt_before_assessment_postop")
 
 linear_regression_individual_variable <- lapply(myvars, function(dvar) lm(eval(paste0(' CIS_fatigue_postop ~ ', dvar)), data = df_icc))
 
 summary(linear_regression_individual_variable[[1]]) #change the number to see the other variabels. Number of myvars=28.
 ```
 
-Variables to exclude for the next step: BN20_S_preop, age, verhage, sex, idh, side, location, histology, dexa_preop, kps_preop, ct_before_assessment_postop, radiotherapy
+Variables to exclude for the next step: BN20_S_preop, age, verhage, sex, idh, side, location, histology, dexa_preop, kps_preop, ct_before_assessment_postop, rt_before_assessment_postop
 
 #### STEP 2 MLR
 Before backward selection:
