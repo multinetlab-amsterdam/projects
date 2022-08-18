@@ -158,7 +158,6 @@ alw = 0.75;    % AxesLineWidth
 fsz = 13;      % Fontsize
 lw = 1.5;      % LineWidth
 msz = 8;       % MarkerSize
-save_dir = '/mnt/anw-gold/KNW/s.kulik/Modeling/Jansen_Rit/Modeling_damage/Prejaas_may_2020/Figures/'; 
 set(gcf,'InvertHardcopy','on');
 set(gcf,'PaperUnits', 'inches');
 papersize = get(gcf, 'PaperSize');
@@ -225,7 +224,6 @@ alw = 0.75;    % AxesLineWidth
 fsz = 13;      % Fontsize
 lw = 1.5;      % LineWidth
 msz = 8;       % MarkerSize
-save_dir = '/mnt/anw-gold/KNW/s.kulik/Modeling/Jansen_Rit/Modeling_damage/Prejaas_may_2020/Figures/'; 
 set(gcf,'InvertHardcopy','on');
 set(gcf,'PaperUnits', 'inches');
 papersize = get(gcf, 'PaperSize');
