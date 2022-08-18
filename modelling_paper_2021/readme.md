@@ -1,3 +1,5 @@
+Authors: Shanna Kulik and Prejaas Tewarie
+
 The scripts posted here were used in [Modeling of individual neurophysiological brain connectivity](https://www.biorxiv.org/content/10.1101/2022.03.02.482608v1).
 
 For privacy reasons, we cannot share the raw data alongisde the scripts. Therefore, our aim here was to post a general version of the computations, allowing readers to understand how we computed the different parts of the analysis.

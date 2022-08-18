@@ -2,7 +2,7 @@
 
 %%%
 
-%%author__ = Shanna Kulik & Preejas
+%%author__ = Shanna Kulik & Prejaas Tewarie
 %%contact__ = l.douw@amsterdamumc.nl
 %%date__ = 2020
 %%status__ = finished

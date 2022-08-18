@@ -6,7 +6,7 @@
 
 %%%
 
-%%author__ = Shanna Kulik & Preejas
+%%author__ = Shanna Kulik & Prejaas Tewarie
 %%contact__ = l.douw@amsterdamumc.nl
 %%date__ = 2020
 %%status__ = finished
@@ -34,7 +34,7 @@
 % empirical data AEC; and empirical data PLI/PLV/AEC over epochs of 6 seconds
 % and deleted unnecessary variables
 
-load('/data.mat')
+load('/path/to/data.mat')
 
 %% Corr FC
 coupling = 0.1:0.012:0.3;
