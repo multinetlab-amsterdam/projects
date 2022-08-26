@@ -20,4 +20,4 @@ Step 4: Non-matched versus matched correlations
 - random_coupling.m: Comparison between the maximum correlations of subjects own data with the maximum correlations of simulated data with the empirical data of other subjects. 
 
 Step 5: Creating raincloud figures
--	Different raincloud figures were created to compare the maximal correlations, optimal coupling values and to compare the maximal correlations when using the individual structural connectivity with the maximal correlations when using the average structural connectivity. 
+- paired_rainclouds.py: Different raincloud figures were created to compare the maximal correlations, optimal coupling values and to compare the maximal correlations when using the individual structural connectivity with the maximal correlations when using the average structural connectivity. 
