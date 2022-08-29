@@ -1,4 +1,4 @@
-This is a project that has resulted in the paper "Neuronal morphology and physiology, functional brain networks and memory in temporal lobe epilepsy", published in Cerebral Cortex in 2021 (open access): https://academic.oup.com/cercor/article/32/11/2424/6375261
+This is a project that has resulted in the paper "Cellular Substrates of Functional Network Integration and Memory in Temporal Lobe Epilepsy", published in Cerebral Cortex in 2021 (open access): https://academic.oup.com/cercor/article/32/11/2424/6375261
 
 The repo contains:
 - multiscale_integration_memory_tle_final.m --> the main code to do unilayer network analysis, statistical analysis and create plots
