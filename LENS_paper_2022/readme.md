@@ -1,6 +1,6 @@
 ## Regional healthy brain activity, glioma occurrence and symptomatology ##
 
-This repo contains all files associated with this manuscript by Numan et al., which is available as a preprint at https://www.medrxiv.org/content/10.1101/2022.01.14.22269290v2
+This repo contains all files associated with this manuscript by Numan et al., which was published on September 22 by Brain (https://t.co/eWmrjMSvKv). It was/is available as a preprint at https://www.medrxiv.org/content/10.1101/2022.01.14.22269290v2
 
 ## Main Code and Data ##
 
