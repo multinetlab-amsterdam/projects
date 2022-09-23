@@ -43,20 +43,7 @@ library(plyr); library(dplyr); library(table1); library(psych)
 First, the synthetic data is uploaded. The synthetic data is made with the Synthpop package (https://www.synthpop.org.uk). Since this data is synthetic, the results in this script can be different from the actual results in the paper. Also, because of this, the exact number of patients per subgroup, can differ from the paper. This dataset contains a synthesized set of 21 items/subscales, which will be used as nodes. Please note that these are not the raw scores of the questionnaires, but only subscales. The scores of the (sub)scales of the MOS-cog and the SF-36 have already been reversed, so that a high score equals more symptoms. If one wants to run this script with their own data, the input should be a list of variables (one variable = one node), where high scores equal more symptoms.
 
 ```{r}
-df<- read_csv("O:/Medische Neuropsychologie/GRIP op vermoeidheid/Symptoomnetwerken/2022 symptoomnetwerk paper L+M data/1. Data/Processed/data_synthetic.csv")
-```
-
-Change variables so a high score equals more symptoms. 
-```{r}
-df$mos_cog <- 42-df$mos_cog
-df$SF36_PF <- 100-df$SF36_PF
-df$SF36_SC <- 100-df$SF36_SC
-df$SF36_RLP <- 100-df$SF36_RLP
-df$SF36_RLM <- 100-df$SF36_RLM
-df$SF36_MH <- 100-df$SF36_MH
-df$SF36_P <- 100-df$SF36_P
-df$SF36_HP <- 100-df$SF36_HP
-df$SF36_CIH <- 100-df$SF36_CIH
+df<- read_csv("data_synthetic.csv")
 ```
 
 Defining z-scores.
