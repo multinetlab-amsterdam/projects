@@ -43,7 +43,7 @@ library(plyr); library(dplyr); library(table1); library(psych)
 First the synthetic data is uploaded. This data is made with the Synthpop library. Since this data is synthetic, the results in this script can be different from the actual results in the paper. Also, because of this, the exact number of patients per subgroup, can differ from the paper.
 
 ```{r}
-df<- read_csv("O:/Medische Neuropsychologie/GRIP op vermoeidheid/Symptoomnetwerken/2022 symptoomnetwerk paper L+M data/1. Data/Processed/data_synthetic.csv")
+df<- read_csv("......csv")
 ```
 
 Defining z-scores.
