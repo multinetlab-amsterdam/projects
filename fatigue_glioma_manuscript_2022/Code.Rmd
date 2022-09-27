@@ -376,8 +376,8 @@ change_plot <- ggplot(df_plot, aes(CIS_fatigue_preop, CIS_fatigue_postop))+
     geom_point(aes(colour = Legend, shape = Legend), position = "jitter", size = 3) +
     geom_hline(yintercept=35,linetype="dashed", color="darkgrey")+  
     geom_vline(xintercept=35,linetype="dashed", color="darkgrey")+  
-  xlab("Preoperative CIS fatigue severity")+
-  ylab("Postoperative CIS fatigue assessment")+
+  xlab("Preoperative CIS-fatigue")+
+  ylab("Postoperative CIS-fatigue")+
   theme_classic()
 
 change_plot + scale_color_manual(values=c("#3c3b3d","#000000","#b8b6ba"))
