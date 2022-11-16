@@ -70,7 +70,7 @@ df$BN20_HA_z <- scale(df$BN20_H)
 df$BN20_S_z <- scale(df$BN20_S)
 df$BN20_DR_z <- scale(df$BN20_DR)
 
-#variabele used to define subgroups later on.
+# used to define subgroups later on.
 df$fatigued27 <- ifelse(df$CIS_fatigue > 26, "yes", "no")
 ```
 
@@ -127,10 +127,10 @@ network_ftg <- estimateNetwork(df_fatigued[, c(30:46)], default = "EBICglasso", 
 Layout setup networks 1A, 1B, 2A, 2B. Because the the fatigue status networks include a smaller amount of nodes, the layout is calculated seperately for these networks below. 
 ```{r}
 labels_12 <- c("CIS-F", "CIS-C", "CIS-M", "CIS-A", 
-               "MOS-Cog", 
-               "CES-D", 
-               "SF-PhF","SF-ScF","SF-RLP","SF-RLM", "SF-MH","SF-BP","SF-HP","SF-CiH",
-               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-Sz", "BN-Dr")
+               "MOS-Cog", "CES-D", 
+               "SF-PF","SF-SF","SF-RP","SF-RE", "SF-MH","SF-BP","SF-HP","SF-CiH",
+               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-SZ", "BN-DR")
+
 groups_12 <- c(rep("CIS", 4), rep("MOS-Cog", 1), rep("CES-D", 1),  rep("SF-36", 8), rep("BN-20", 7))
 colors_12 <- c("#0868ac", "#f0f9e8", "#bae4bc", "#43a2ca", "#7bccc4")
 Layout <- averageLayout(network_preop,network_postop,  network_gr2, network_gr34)
@@ -166,10 +166,10 @@ centralityPlot(network_gr34, include = "Strength", scale="raw", theme_bw=T, labe
 
 layout networks 3A, 3B
 ```{r}
-labels_3 <- c("MOS-Cog", 
-              "CES-D", 
-              "SF-PhF","SF-ScF","SF-RLP","SF-RLM", "SF-MH","SF-BP","SF-HP","SF-CiH",
-              "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-Sz", "BN-Dr")
+labels_3 <- c("MOS-Cog", "CES-D", 
+               "SF-PF","SF-SF","SF-RP","SF-RE", "SF-MH","SF-BP","SF-HP","SF-CiH",
+               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-SZ", "BN-DR")
+
 groups_3 <- c(rep("MOS-Cog", 1), rep("CES-D", 1),  rep("SF-36", 8), rep("BN-20", 7))
 colors_3<- c("#0868ac", "#f0f9e8", "#43a2ca", "#7bccc4")
 Layout_fatigue <- averageLayout(network_no_ftg, network_ftg)
