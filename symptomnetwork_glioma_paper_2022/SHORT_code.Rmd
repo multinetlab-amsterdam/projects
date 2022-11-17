@@ -1,0 +1,381 @@
+---
+title: "Code symptomnetwork paper"
+author: "Jantine Röttgering"
+date: "26-8-2022"
+output: html_document
+---
+
+#### Email: j.rottgering@amsterdamumc.nl
+#### Purpose of script: 
+Analyses of the 2022 manuscript on symptom networks in glioma patients.
+
+#### Status:
+Finished
+
+#### Review History
+Reviewed by: Maxine Gorter
+Date: 23-9-2022
+
+#### Notes
+This script is used for the analyses of the 2022 paper "Toward unraveling the association between fatigue and tumor- and treatment-related factors, symptoms, and quality of life in glioma". This script can be run with the provided synthetic data. Thie synthetic data are based on the raw data and generated using Synthpop. However, please note, that the results generated with this data do not one on one reflect the true results Therefore this script should merely be used to understand the statistical analyses and not to reproduce the results in the manuscript.
+
+It consists of several parts:
+
+1. Uploading synthetic data and z-scoring of the variables
+2. Define subgroups
+3. Computing the networks
+4. Figures networks and centrality
+5. Comparing subgroups with NCT
+6. Similarity between subgroups with correlations between edgelists
+7. Supplementary. Computing stability strenght and accuracy edgeweights
+8. Supplementary. Figures stability strenght and accuracy edgeweights
+
+#### Load libraries 
+```{r, warning = FALSE, message = FALSE}
+library(qgraph) #  estimating symptom network
+library(bootnet) # the stability calculations
+library(NetworkComparisonTest) # comparing networks
+
+library(plyr); library(dplyr); library(table1); library(psych)
+```
+
+# 1. Uploading synthetic data and scaling variables ##################################
+First, the synthetic data is uploaded. The synthetic data is made with the Synthpop package (https://www.synthpop.org.uk). Since this data is synthetic, the results in this script can be different from the actual results in the paper. Also, because of this, the exact number of patients per subgroup, can differ from the paper. This dataset contains a synthesized set of 21 items/subscales, which will be used as nodes. Please note that these are not the raw scores of the questionnaires, but only subscales. The scores of the (sub)scales of the MOS-cog and the SF-36 have already been reversed, so that a high score equals more symptoms. If one wants to run this script with their own data, the input should be a list of variables (one variable = one node), where high scores equal more symptoms.
+
+```{r}
+df<- read_csv("data_synthetic.csv")
+```
+
+Defining z-scores.
+```{r}
+df$CIS_fatigue_z <- scale(df$CIS_fatigue)
+df$CIS_concentration_z <- scale(df$CIS_concentration)
+df$CIS_motivation_z <- scale(df$CIS_motivation)
+df$CIS_activity_z <- scale(df$CIS_activity)
+df$mos_cog_z <- scale(df$mos_cog)
+df$CESD_total_z <- scale(df$CESD_total)
+df$SF36_PF_z <- scale(df$SF36_PF)
+df$SF36_SC_z <- scale(df$SF36_SC)
+df$SF36_RLP_z <- scale(df$SF36_RLP)
+df$SF36_RLM_z <- scale(df$SF36_RLM)
+df$SF36_MH_z <- scale(df$SF36_MH)
+df$SF36_P_z <- scale(df$SF36_P)
+df$SF36_HP_z <- scale(df$SF36_HP)
+df$SF36_CIH_z <- scale(df$SF36_CIH)
+df$BN20_FU_z <- scale(df$BN20_FU)
+df$BN20_VD_z <- scale(df$BN20_VD)
+df$BN20_MD_z <- scale(df$BN20_MD)
+df$BN20_CD_z <- scale(df$BN20_CD)
+df$BN20_HA_z <- scale(df$BN20_H)
+df$BN20_S_z <- scale(df$BN20_S)
+df$BN20_DR_z <- scale(df$BN20_DR)
+
+# used to define subgroups later on.
+df$fatigued27 <- ifelse(df$CIS_fatigue > 26, "yes", "no")
+```
+
+# 2. Define subgroups ##################################
+
+Filter cases per subgroup. 
+```{r}
+#1A. PREOPERATIVE
+df_preop <- df %>% filter(disease_status=="baseline")
+df_preop <- df_preop %>% distinct(random_id, .keep_all = TRUE)
+
+#1B. POSTOPERATIVE
+df_postop <- df %>% filter(disease_status=="treatment" | disease_status=="stable")
+df_postop <- df_postop %>% distinct(random_id, .keep_all = TRUE)
+
+#2A. WHO grade II
+df_gr2 <- df %>% dplyr::filter(grade == "II")
+df_gr2 <- df_gr2 %>% distinct(random_id, .keep_all = TRUE)
+
+#2B. WHO grade III & IV
+df_gr34 <- df %>% dplyr::filter(grade != "II")
+df_gr34 <- df_gr34 %>% distinct(random_id, .keep_all = TRUE)
+
+#3A. NON-FATIGUED
+df_non_fatigued <- df %>% dplyr::filter(fatigued27== "no")
+df_non_fatigued <- df_non_fatigued %>% distinct(random_id, .keep_all = TRUE)
+
+#3B. FATIGUED
+df_fatigued <- df %>% dplyr::filter(fatigued27== "yes")
+df_fatigued <- df_fatigued %>% distinct(random_id, .keep_all = TRUE)
+```
+
+# 3. Computing the networks #########################
+
+#### Create networks
+```{r}
+set.seed(12345)
+network_preop <- estimateNetwork(df_preop[, c(26:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod ="spearman") #select the nodes in de df, here "c(26:)"
+network_preop #check the number of edges in the output
+
+network_postop <- estimateNetwork(df_postop[, c(26:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+
+network_gr2 <- estimateNetwork(df_gr2[, c(26:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+
+network_gr34 <- estimateNetwork(df_gr34[, c(26:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+
+network_no_ftg <- estimateNetwork(df_non_fatigued[, c(30:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman") #here CIS nodes are not selected
+
+network_ftg <- estimateNetwork(df_fatigued[, c(30:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+```
+
+# 4. Figures networks and centrality #########################
+
+Layout setup networks 1A, 1B, 2A, 2B. Because the the fatigue status networks include a smaller amount of nodes, the layout is calculated seperately for these networks below. 
+```{r}
+labels_12 <- c("CIS-F", "CIS-C", "CIS-M", "CIS-A", 
+               "MOS-Cog", "CES-D", 
+               "SF-PF","SF-SF","SF-RP","SF-RE", "SF-MH","SF-BP","SF-HP","SF-CiH",
+               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-SZ", "BN-DR")
+
+groups_12 <- c(rep("CIS", 4), rep("MOS-Cog", 1), rep("CES-D", 1),  rep("SF-36", 8), rep("BN-20", 7))
+colors_12 <- c("#0868ac", "#f0f9e8", "#bae4bc", "#43a2ca", "#7bccc4")
+Layout <- averageLayout(network_preop,network_postop,  network_gr2, network_gr34)
+```
+
+```{r}
+set.seed(1)
+
+#1A. preoperative network figure
+qgraph(network_preop$graph, 
+       layout=Layout, labels= labels_12, vsize=8, groups= groups_12, posCol = "#4169E1", negCol = "#DC143C", color = colors_12)
+
+centralityPlot(network_preop, include = "Strength", scale="raw", theme_bw=T, labels=labels_12)
+
+#1B. postoperative
+qgraph(network_postop$graph, 
+       layout=Layout, labels= labels_12, vsize=8, groups= groups_12, posCol = "#4169E1", negCol = "#DC143C", color = colors_12)
+
+centralityPlot(network_postop, include = "Strength", scale="raw", theme_bw=T, labels=labels_12)
+
+#2A. grade II
+qgraph(network_gr2$graph, 
+       layout=Layout, labels= labels_12, vsize=8, groups= groups_12, posCol = "#4169E1", negCol = "#DC143C", color = colors_12)
+
+centralityPlot(network_gr2, include = "Strength", scale="raw", theme_bw=T, labels=labels_12)
+
+#2B. grade III & IV
+qgraph(network_gr34$graph, 
+       layout=Layout, labels= labels_12, vsize=8, groups= groups_12, posCol = "#4169E1", negCol = "#DC143C", color = colors_12)
+
+centralityPlot(network_gr34, include = "Strength", scale="raw", theme_bw=T, labels=labels_12)
+```
+
+layout networks 3A, 3B
+```{r}
+labels_3 <- c("MOS-Cog", "CES-D", 
+               "SF-PF","SF-SF","SF-RP","SF-RE", "SF-MH","SF-BP","SF-HP","SF-CiH",
+               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-SZ", "BN-DR")
+
+groups_3 <- c(rep("MOS-Cog", 1), rep("CES-D", 1),  rep("SF-36", 8), rep("BN-20", 7))
+colors_3<- c("#0868ac", "#f0f9e8", "#43a2ca", "#7bccc4")
+Layout_fatigue <- averageLayout(network_no_ftg, network_ftg)
+```
+
+```{r}
+#3A. non-fatigued
+qgraph(network_no_ftg$graph, 
+       layout=Layout_fatigue, labels=labels_3 , vsize=8, groups=groups_3, posCol = "#4169E1", negCol = "#DC143C", color = colors_3)
+
+centralityPlot(network_no_ftg, include = "Strength", scale="raw", theme_bw=T, labels=labels_3)
+
+#3B. fatigued
+qgraph(network_ftg$graph, 
+       layout=Layout_fatigue, labels=labels_3 , vsize=8, groups=groups_3, posCol = "#4169E1", negCol = "#DC143C", color = colors_3)
+
+centralityPlot(network_ftg, include = "Strength", scale="raw", theme_bw=T, labels=labels_3)
+```
+
+####  Supplementary table. Matrix of the edgeweights of the network of 1A. perop
+```{r}
+network_preop$graph[lower.tri(network_preop$graph, diag = T)] <- NA #remove the lower part of the triangle in de matrix
+
+matrix_supp <- as.data.frame(network_preop$graph)
+colnames(matrix_supp)[] <- labels_12
+rownames(matrix_supp)[] <- labels_12
+matrix_supp
+```
+
+
+# 5. Comparing subgroups with NCT #########################
+
+### NCT: 1A. preoperative versus 1B. postoperative
+```{r}
+set.seed(1)
+comparison1 <- NCT(network_preop, network_postop, it=100, paired=FALSE, weighted=TRUE, test.edges=FALSE, test.centrality=TRUE, centrality = c("strength"), nodes= "all", progressbar=TRUE)
+
+# difference in global strength between the networks of the observed (real) data sets.
+comparison1$glstrinv.real
+#The difference in global strength between the networks of the permutated data sets
+comparison1$glstrinv.perm
+# separate global strength values of the individual networks
+comparison1$glstrinv.sep
+# p value resulting from the permutation test concerning difference in global strength
+comparison1$glstrinv.pval
+```
+
+### NCT: 2A. Gr2 versus 2B. Gr34
+```{r}
+set.seed(789)
+comparison2 <- NCT(network_gr2, network_gr34, it=100, paired=FALSE, weighted=TRUE, test.edges=FALSE, test.centrality=TRUE, centrality = c("strength"), nodes= "all", progressbar=TRUE)
+
+comparison2$glstrinv.real 
+comparison2$glstrinv.perm
+comparison2$glstrinv.sep
+comparison2$glstrinv.pval
+```
+
+### NCT: 3A. non-fatigued versus 3B. Fatigued
+```{r}
+set.seed(12345)
+comparison3 <- NCT(network_no_ftg, network_ftg, it=100, paired=FALSE, weighted=TRUE, test.edges=FALSE, test.centrality=TRUE, centrality = c("strength"), nodes= "all", progressbar=TRUE)
+
+comparison3$glstrinv.real 
+comparison3$glstrinv.perm
+comparison3$glstrinv.sep 
+comparison3$glstrinv.pval 
+```
+
+### NCT: compare the 1A and 1B network, excluding the CIS nodes
+To solidify the difference in global strength between the non-fatigue and fatigue networks, we also compared networks of preoperative (1A) and postoperative (1B) patients after excluding the CIS nodes as a statistical check.
+
+```{r}
+set.seed(1658)
+network_preop_nocis <- estimateNetwork(df_preop[, c(29:45)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+network_postop_nocis <- estimateNetwork(df_postop[, c(29:45)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+
+qgraph(network_preop_nocis$graph, 
+       layout=Layout_fatigue, labels=labels_3 , vsize=8, groups=groups_3, posCol = "#4169E1", negCol = "#DC143C", color = colors_3)
+
+centralityPlot(network_preop_nocis, include = "Strength", scale="raw", theme_bw=T, labels=labels_3)
+
+qgraph(network_postop_nocis$graph, 
+       layout=Layout_fatigue, labels=labels_3 , vsize=8, groups=groups_3, posCol = "#4169E1", negCol = "#DC143C", color = colors_3)
+
+centralityPlot(network_postop_nocis, include = "Strength", scale="raw", theme_bw=T, labels=labels_3)
+
+#NCT
+comparison4 <- NCT(network_preop_nocis, network_postop_nocis, it=100, paired=FALSE, weighted=TRUE, test.edges=FALSE, test.centrality=TRUE, centrality = c("strength"), nodes= "all", progressbar=TRUE)
+
+comparison4$glstrinv.real 
+comparison4$glstrinv.perm
+comparison4$glstrinv.sep 
+comparison4$glstrinv.pval 
+```
+
+# 6. similarity: correlation between edgelists #########################
+
+### 1A. peroperative versus 1B. postoperative
+```{r}
+#select only the upper triangle of the BL_matrix
+network_preop$graph[lower.tri(network_preop$graph, diag = T)] <- NA
+
+#covert to edgelist
+edgeweigth_preop <- reshape2::melt(network_preop$graph, na.omit=T)[,3]
+edgeweigth_preop<- as.numeric(na.omit(edgeweigth_preop)[1:210])
+
+# Make an edgelist of the TREATMENT/FU matrix
+network_postop$graph[lower.tri(network_postop$graph, diag = T)] <- NA
+
+###covert to edgelist
+edgeweigth_postop <- reshape2::melt(network_postop$graph, na.omit=T)[,3]
+edgeweigth_postop<- as.numeric(na.omit(edgeweigth_postop)[1:210])
+
+#test
+cor.test(edgeweigth_preop, edgeweigth_postop, method=c("spearman")) 
+```
+
+### 2A. grade II versus 2B. grade III_IV
+```{r}
+network_gr2$graph[lower.tri(network_gr2$graph, diag = T)] <- NA
+edgeweigth_gr2 <- reshape2::melt(network_gr2$graph, na.omit=T)[,3]
+edgeweigth_gr2<- as.numeric(na.omit(edgeweigth_gr2)[1:210])
+
+network_gr34$graph[lower.tri(network_gr34$graph, diag = T)] <- NA
+edgeweigth_gr34 <- reshape2::melt(network_gr34$graph, na.omit=T)[,3]
+edgeweigth_gr34<- as.numeric(na.omit(edgeweigth_gr34)[1:210])
+
+cor.test(edgeweigth_gr2, edgeweigth_gr34, method=c("spearman")) 
+```
+
+### 3A. non-fatigued versus 3B. fatigued
+```{r}
+network_ftg$graph[lower.tri(network_ftg$graph, diag = T)] <- NA
+edgeweigth_ftg <- reshape2::melt(network_ftg$graph, na.omit=T)[,3]
+edgeweigth_ftg<- as.numeric(na.omit(edgeweigth_ftg)[1:136])
+
+network_no_ftg$graph[lower.tri(network_no_ftg$graph, diag = T)] <- NA
+edgeweigth_no_ftg <- reshape2::melt(network_no_ftg$graph, na.omit=T)[,3]
+edgeweigth_no_ftg<- as.numeric(na.omit(edgeweigth_no_ftg)[1:136])
+
+#test 
+cor.test(edgeweigth_ftg, edgeweigth_no_ftg, method=c("spearman"))
+```
+
+# 7. Supplementary. Computing stability strenght and accuracy edgeweights #########################
+
+The next two blocks use quite a bit of computational power. It takes about an hour to run the bootnet blocks on a regular computer, therefore eval=FALSE. If you want to run those blocks to understand the output, the nBoot could be lowered. 
+
+Computing 95% CI of the edgeweights with bootstrapping. 
+```{r eval=FALSE} 
+set.seed(1)
+boot_edgeweight_preop <- bootnet(network_preop,nBoot=1000, nCores=8)
+boot_edgeweight_postop <- bootnet(network_postop,nBoot=1000, nCores=8)
+boot_edgeweight_gr2 <- bootnet(network_gr2,nBoot=1000, nCores=8)
+boot_edgeweight_gr34 <- bootnet(network_gr34,nBoot=1000, nCores=8)
+boot_edgeweight_no_ftg <- bootnet(network_no_ftg,nBoot=1000, nCores=8)
+boot_edgeweight_ftg <- bootnet(network_ftg, nBoot=1000, nCores=8)
+```
+
+Computing stability of the strength with case-drop bootstrapping. 
+```{r eval=FALSE} 
+set.seed(34567)
+case_drop_boot_pre <- bootnet(network_preop, nBoot=1000, nCores=8, type="case", statistics = c("Strength"))
+cs_bs_preop <- corStability(case_drop_boot_pre)
+
+case_drop_boot_postop <- bootnet(network_postop, nBoot=1000, nCores=8, type="case", statistics = c("Strength"))
+cs_bs_postop<- corStability(case_drop_boot_postop)  
+
+case_drop_boot_gr2 <- bootnet(network_gr2, nBoot=1000, nCores=8, type="case", statistics = c("Strength"))
+cs_bs_gr2 <- corStability(case_drop_boot_gr2) 
+
+case_drop_boot_gr34 <- bootnet(network_gr34, nBoot=1000, nCores=8, type="case", statistics = c("Strength"))
+cs_bs_gr34 <- corStability(case_drop_boot_gr34) 
+
+case_drop_boot_no_ftg <- bootnet(network_no_ftg, nBoot=1000, nCores=8, type="case", statistics = c("Strength"))
+cs_bs_non_fatigued <- corStability(case_drop_boot_no_ftg 
+
+case_drop_boot_ftg <- bootnet(network_ftg, nBoot=1000, nCores=8, type="case", statistics = c("Strength"))
+cs_bs_fatigued <- corStability(case_drop_boot_ftg)
+```
+
+# 8. Supplementary. Figures stability strenght and accuracy edgeweights #########################
+
+```{r eval=FALSE} 
+#1A. preoperative
+plot(boot_edgeweight_preop, labels=F, order = "sample")
+plot(case_drop_boot_pre, statistics = c("Strength"))
+
+#1B. postoperative
+plot(boot_edgeweight_postop, labels=F, order = "sample")
+plot(case_drop_boot_postop, statistics = c("Strength"))
+
+#2A. grade II
+plot(boot_edgeweight_gr2, labels=F, order = "sample")
+plot(case_drop_boot_gr2, statistics = c("Strength"))
+
+#2B. grade III & IV
+plot(boot_edgeweight_gr34, labels=F, order = "sample")
+plot(case_drop_boot_gr34, statistics = c("Strength"))
+
+#3A. non-fatigued
+plot(boot_edgeweight_no_ftg, labels=F, order = "sample")
+plot(case_drop_boot_no_ftg, statistics = c("Strength"))
+
+#3B. fatigued
+plot(boot_edgeweight_ftg, labels=F, order = "sample")
+plot(case_drop_boot_ftg, statistics = c("Strength"))
+```
