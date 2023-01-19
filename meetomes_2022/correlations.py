@@ -40,7 +40,7 @@ from matplotlib.pyplot import figure
 # %%
 
 # 0. Set working directory
-os.chdir("/home/anw/mdbet/my-scratch/meetomes")
+os.chdir("path/to/data/")
 
 # %%
 
