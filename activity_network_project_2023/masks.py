@@ -1,26 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Define the peritumoral area
+
+
+Scripts to calculate the percentage overlap of the tumor with brain regions of the BNA to determine the peritumoral area.
+
+
 """
-Created on Mon Jul  5 06:38:24 2021
 
-Scripts to calculate the percentage overlap of the tumor with the brain regions to determine the peritumoral area.
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "2021/07/05"   
+__status__ = "Finished"
 
-@author: m.zimmermann
-"""
-# --- IMPORTS --- #
+####################
+# Review History   #
+####################
 
-import numpy as np 
-import pandas as pd 
-from shutil import copy 
+# Reviewed by Eduarda Centeno 20230202
+
+#%%
+####################
+# Libraries        #
+####################
+
+# Standard imports  ###
 import os 
 from glob import glob
+from shutil import copy 
+
+# Third party imports ###
+import numpy as np 
+import pandas as pd #version 1.1.5
 import matplotlib.pyplot as plt
 
 
 #%%
 
 ########################
-#COPY NEEDED OVERLAP AND VOLUMES FILES TO DIRECTORY 
+#COPY OVERLAP AND VOLUMES FILES TO DIRECTORY 
 ########################
 
 # --- Step 1.) Preparations --- #
