@@ -1,29 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Profiles of activity and network metrics
+
+Script for main analysis: statistical analysis concerning the profiles of (disturbances in) network metrics and activity. 
+
+
+
 """
-Created on Tue Feb 15 15:42:10 2022
 
-TScript for main analysis: statistical analysis concerning the profiles/characterisation of (disturbances in) network metrics and activity. 
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "2022/02/15"   
+__status__ = "Finished" 
 
-@author: m.zimmermann
+####################
+# Review History   #
+####################
 
-"""
-#%% 
-### --- IMPORTS --- ###
+# Reviewed by Eduarda Centeno 20230202
 
-import seaborn as sns
-from scipy.stats import mannwhitneyu
-import pandas as pd
-import matplotlib.pyplot as plt
+#%%
+####################
+# Libraries        #
+####################
+
+# Standard imports  ###
 import glob
-import re
 from datetime import datetime
-import numpy as np
 
+# Third party imports ###
+import pandas as pd #version 1.1.5
+import numpy as np
+import matplotlib.pyplot as plt
+import re
 import statsmodels.api as sm
 import statsmodels.formula.api as smf 
 import scipy.stats as stats
 from scipy.stats import wilcoxon
+from scipy.stats import mannwhitneyu
+import seaborn as sns
 
 #%% 
 ###################

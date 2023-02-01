@@ -1,22 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Create master dataframe
+
+Scripts to create a dataframe with all offset and network metrics for different densities and frequencies, with tumor overlaps and raw values in one #
+
 """
-Created on Tue Feb  1 07:27:34 2022
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "2022/02/01"   
+__status__ = "Finished"
 
-# Scripts to create a dataframe with all offset and network metrics for different densities and frequencies, with tumor overlaps and raw values in one #
+####################
+# Review History   #
+####################
 
-@author: m.zimmermann
-"""
+# Reviewed by Eduarda Centeno 20230202
 
-# --- IMPORTS --- #
+#%%
+####################
+# Libraries        #
+####################
 
-import numpy as np 
-import pandas as pd 
+# Standard imports  ###
 import glob
 from functools import reduce
-import re
-import glob
 
+# Third party imports ###
+import numpy as np 
+import pandas as pd #version 1.1.5
+import re
 
 
 #%%

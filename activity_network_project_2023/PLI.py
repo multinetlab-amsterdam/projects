@@ -1,39 +1,51 @@
+"""PLI construction
+
+Scripts to construct functional networks using the PLI for the different frequency bands and densities.
+
 """
 
-Scripts to construct the PLI matrices for the different frequency bands and densities
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "January 2022"   
+__status__ = "Finished"
 
-@author: m.zimmermann
-"""
+####################
+# Review History   #
+####################
+
+# Reviewed by Eduarda Centeno 20230202
+
+#%%
+####################
+# Libraries        #
+####################
+
+# Standard imports  ###
+import os
+import time
+from datetime import date
 
 
-# --- IMPORTS --- #
-
+# Third party imports ###
 import numpy as np
-import pandas as pd
+import pandas as pd #version 1.1.5
 from numpy import fft
 from scipy.signal import hilbert
 from scipy import fft
 import scipy
 import statsmodels.api as sm
-import os
 from tqdm import tqdm
-import time
-from datetime import date
-
-# Basic libraries
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
 from plotly.offline import plot as plot_off
-
-
-# Signal processing libraries
 from scipy import signal
 from scipy.fft import fft, irfft2, ifft2, irfftn, irfft, ifft
 from scipy.fftpack import hilbert
 import matplotlib as mpl
 
-# loop libraries
+
+# Internal imports ###
 from alternative_Compute_broadband import find_paths
 from fft_filt import fft_filt
 from make_csv import make_csv

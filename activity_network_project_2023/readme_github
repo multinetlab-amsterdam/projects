@@ -1,10 +1,37 @@
 19-01-2023 MZ: 
+
 Folders containing dataframes for the analysis: 
  
 - 20231901_df_main_analysis: contain the dataframes for the main analysis: df_peritumoral (only includes peritumoral data), df_peritumoral_all (only relevant for analysis relating peritumoral activity to relationships),
  			     df_homologue (only contains data on peritumoral homologue), df_non_tum (only contains data of rest of the brain). 
 - 20231901_df_subtype_analysis: contains (the same as folder for main analysis) dataframes, but now for the different tumor subtypes 
 - 20231901_df_standardized_beta_analysis: Contains standardized dataframes (on themselves) to obtain standardized coefficients in LMM analysis for effect size. 
-- corrs_CC/EC_offset: contains dataframes with correlations between offset and network metrics for further analysis 
-- df_within_subject_correlations: contains dataframes with Pearsons correlations between activity and network metrics for every subject 
-- 20231901_df_raw_values: Dataframes containing the raw values of all metrics. Particularly used for the spin test analysis.
+
+
+Scripts: 
+
+There were several different scripts used for this project.
+
+The scripts used for data preparation are (in the order of use): 
+
+1.) PLI.py: In this script we filter the MEG signal into the different frequency bands and construct the functional network matrix (PLI)  
+2.) EC_CC_pipeline: This script is used to trheshold and binarize the networks, and then calculate the network metrics (CC and EC) 
+3.) masks.py: In this script we define the peritumoral area based om the tumor masks 
+4.) master_df.py: This script serves to construct a main dataframe for the main analyses containing the standardized activity and network metrics 
+		  and the information on which regions belong to which area (peritumoral, homologue, rest of the brain). Based on this dataframe, the area specific dataframes were
+	          constructed by filtering for the specific area (peritumoral, homologue, rest). These can be found in the dataframes folder.This script also
+		  includes the construction of the dataframes used in the spin test analysis, where raw values are needed. 
+
+To calculate the offset, we used the scripts found here: https://github.com/multinetlab-amsterdam/data_analysis/tree/master/fooof
+
+
+The scripts used for the statistical analyses are: 
+
+5.)statistics_profiles_github.py: This script contains all analyses to characterise activity and network metrics.  
+6.)statistics_network_activity_github.py: This script contains all statistical analyses (except for the spin test) to
+					   relate activity and network metrics.
+7.)spin-test-binom.py: This script was used to gain information for the calculation of the binomial 
+                       confidence interval for the p-values of the spin test results.  
+
+
+For the spin test we used the scripts found here: /github/link/to/spintest

@@ -1,34 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Relation regional activity and network metrics
+
+Script for main analysis: regional activity in relation to network characteristics
+
+
 """
-Created on Tue Mar 29 12:58:55 2022
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "2022/03/29"   
+__status__ = "Finished" 
 
-Script for main analysis: regional network characteristics in relation to activity
+####################
+# Review History   #
+####################
 
-@author: m.zimmermann
-"""
+# Reviewed by Eduarda Centeno 20230202
 
-#---IMPORTS---# 
-import numpy as np 
-import pandas as pd
+#%%
+####################
+# Libraries        #
+####################
+
+# Standard imports  ###
 from datetime import datetime
 
+# Third party imports ###
+import numpy as np 
+import pandas as pd #version 1.1.5
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 import statsmodels.api as sm
 import statsmodels.formula.api as smf 
-import scipy.stats as stats
 from statsmodels.stats.diagnostic import het_white 
 import statsmodels.stats.multitest
-
+import scipy.stats as stats
 from scipy.stats import zscore
 from scipy.stats import pearsonr
-
-
 from scipy.stats import ttest_1samp
 from scipy.stats import ttest_ind
-
 
 
 #%%
