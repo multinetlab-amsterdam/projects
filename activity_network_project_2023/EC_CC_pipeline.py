@@ -1,30 +1,46 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+
+"""Network metrics pipeline.
+
+   Script to threshold the networks, calculate network metriccs and standadrize those based on regional data from HCs.
+
 """
-Created on Fri Feb 11 11:35:23 2022
 
-Script to threshold the networks, calculate network metriccs and standadrize those based on regional data from HCs
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "2022/02/11"   
+__status__ = "Finished" 
 
-@author: m.zimmermann
-"""
+####################
+# Review History   #
+####################
 
-# --- IMPORTS --- # 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# Reviewed by Eduarda Centeno 20230202
+
+#%%
+####################
+# Libraries        #
+####################
+
+# Standard imports  ###
 import glob
 import os
-from tqdm import tqdm
-import re
-
-#Network libraries
-import networkx as nx
-
 import warnings
 warnings.filterwarnings('ignore')
 import pickle
 from datetime import datetime
+
+# Third party imports ###
+import numpy as np
+import pandas as pd #version 1.1.5
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import tqdm
+import re
+import networkx as nx #version 2.3
+
 
 
 

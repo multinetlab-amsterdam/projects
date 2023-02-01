@@ -1,20 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Dec  2 15:02:47 2022
+"""Spin-test binomial confidence interval
 
-Script to calculate how many of the spin-test correlations (from the permutations) are above correlation, 
+
+Script to calculate how many of the spin-test correlations (from the permutations) are above the final correlation, 
 to calculate binomial p-value on website: https://statpages.info/confint.html
 
-@author: m.zimmermann
+
 """
-import pandas as pd
+
+__author__ = "Mona Lilo Margarethe Zimmermann"
+__contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
+__date__ = "2022/12/02"   
+__status__ = "Finished" 
+
+####################
+# Review History   #
+####################
+
+# Reviewed by Eduarda Centeno 20230202
+
+#%%
+####################
+# Libraries        #
+####################
+
+# Third party imports  ###
+import pandas as pd #version 1.1.5
 import numpy as np
 import scipy.io as sio
 
 
 
-
+#%%
 #Get number of positives spin-test 
 results = '/path/to/spin-test/result/results_df_EC_lower_alpha_3_patients_rest_non_tum.mat'
 test = sio.loadmat(results)
