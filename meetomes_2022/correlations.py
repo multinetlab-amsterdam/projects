@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-""" 
+"""
+Created on Fri Jan 27 13:10:21 2023
+
+
 This file includes all analyses performed as part of the "Meetomes" project. 
 After identifying six interactional roles and counting how often each of the team members produced role-specific actions, 
 we wanted to correlate the occurrence of such actions to network measures as well as meeting evaluations. For that purpose, we use this script.
@@ -22,20 +26,20 @@ __status__ = "Finished"
 import os
 import warnings
 
-warnings.filterwarnings("ignore")
-
 # Third party imports
-import numpy as np
-import pandas as pd
-import statsmodels.api as sm
+import numpy as np # version 1.23.5
+import pandas as pd # version 1.5.2
+import statsmodels.api as sm # version 0.13.2
 import statsmodels.formula.api as smf
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
-from scipy import stats
+from scipy import stats # version 1.9.3
 import scipy.stats
 from scipy.stats import pearsonr
-import seaborn as sns
-import matplotlib.pyplot as plt
+import seaborn as sns # version 0.12.1
+import matplotlib.pyplot as plt # version 3.6.2
 from matplotlib.pyplot import figure
+
+warnings.filterwarnings("ignore")
 
 # %%
 
@@ -47,6 +51,9 @@ os.chdir("path/to/data/")
 # 1. Load data (header=0 takes the first row as column names)
 data = pd.read_excel("finaldata_def.xls", header=0)
 data["local_eff"] = data["local_eff"].astype(float)
+
+# Remove survey item on mood, was only for validation purposes
+data = data.drop(columns='mood_norm')
 
 # %%
 # 2. Transform data
@@ -60,7 +67,7 @@ data["total_actions"] = (
     + data["practical"]
 )
 
-# Change counts of role-specific actions to proportions relative to the total
+# Change counts of role-specific actions to proportions relative to the total count
 roles = ["chair", "skeptic", "expert", "clarifier", "connector", "practical"]
 for col in roles:
     data[col] = (
@@ -68,7 +75,7 @@ for col in roles:
     )  # calculate relative proportions of role-specific actions
     data[col] = data[col].fillna(0)  # omit NA
 
-# Rename integers to letters from the alphabet bc otherwise analysis will treat variable name as integer
+# Rename integers to letters from the alphabet; otherwise, analysis will treat variable "name" as integer
 alphabet = [
     "AA",
     "A",
@@ -99,11 +106,12 @@ alphabet = [
     "Z",
     "ZZ",
 ]
-numbers = set(range(1, 28, 1))
+
 counter = 0
 
 for j in data["name"]:
-    for i in numbers:
+    for i in range(28):
+        print(i)
         if data.iloc[counter, 1] == i:  # refers to the name column
             data.iloc[counter, 1] = alphabet[i]
     counter += 1
@@ -153,11 +161,10 @@ q_items = [
     "translation_norm",
     "connection_norm",
     "understand_norm",
-    "mood_norm",
 ]
+
 columns_for_analysis = ["name"] + roles + q_items
 data_evals = data[columns_for_analysis].dropna()
-data_evals.iloc[:, 1:].apply(stats.zscore)  # Z-scoring to calculate std. Beta
 
 # Reset indices
 data_evals.reset_index(inplace=True, drop=True)
@@ -172,24 +179,10 @@ data_evals = pd.concat([data_evals, dummies], axis=1)
 for i in data_evals.iloc[:, 16:]:
     data_evals.rename(columns={str(i): "dummy_" + str(i)}, inplace=True)
 
-# Create the dummy string, called stringZ
-Z = data_evals.iloc[:, 13:].columns
-
-stringZ = " "
-dummy_counter = 0
-for dummy in Z:
-    if dummy_counter == 0:
-        stringZ = stringZ + str(dummy)
-    else:
-        stringZ = stringZ + "+ " + str(dummy)
-
-    dummy_counter += 1
-
 # Loop over action proportions and correlate them to evaluations
 for row_item in q_items:  # cells containing evaluations
     for col_item in roles:  # cells containing proportions
         string = "{} ~ {}".format(row_item, col_item)
-        print(string)
         md = smf.mixedlm(string, data_evals, groups=data_evals["name"])
         mdf = md.fit()
         output.loc[row_item, col_item + "_p"] = mdf.pvalues[1]  # save p-value
@@ -198,18 +191,19 @@ for row_item in q_items:  # cells containing evaluations
         # Instantaneously report significant correlations
         if mdf.pvalues[1] <= 0.05:
             print(
-                "Significant correlation between " + col_item + " and " + row_item + ":"
+                "Significant association between " + col_item + " and " + row_item + ":"
             )
             print("Coefficient: " + str(mdf.params[1]))
             print("P-value: " + str(mdf.pvalues[1]))
-            print("Bonferroni-corrected P: " + str(mdf.pvalues[1].astype(float) * 48))
+            print("Bonferroni-corrected P: " + str(mdf.pvalues[1].astype(float) * (len(q_items)*len(roles))))
 
 # %%
 
 # 4. Correlate proportions of role-specific actions to network measures
 # Subset only the data that you need for these analysis and drop NA values
-data_ntwrk = data.iloc[:, 0:13].dropna()
-data_ntwrk.iloc[:, 2:].apply(stats.zscore)  # Z-scoring to calculate std. Beta
+ntwrkmsrs = ["local_eff", "nod_str", "partcoef", "wmdegree", "betwcent"]
+columns_for_analysis = ["name"] + roles + ntwrkmsrs
+data_ntwrk = data[columns_for_analysis].dropna()
 
 # Reset indices
 data_ntwrk.reset_index(inplace=True, drop=True)
@@ -220,31 +214,14 @@ dummies = pd.get_dummies(data_ntwrk["name"])
 # Merge the dummy df with the data df
 data_ntwrk = pd.concat([data_ntwrk, dummies], axis=1)
 
-# Generate string to use in regression formula later
-Z = data_ntwrk.iloc[:, 13:].columns
-
-stringZ = " "
-dummy_counter = 0
-for dummy in Z:
-    if dummy_counter == 0:
-        stringZ = stringZ + str(dummy)
-    else:
-        stringZ = stringZ + "+ " + str(dummy)
-
-    dummy_counter += 1
-
 # Rename dummy columns for clarity
 for i in data_ntwrk.iloc[:, 13:]:
     data_ntwrk.rename(columns={str(i): "dummy_" + str(i)}, inplace=True)
-
-# Create variable names that should be iteratively used as input
-ntwrkmsrs = ["local_eff", "nod_str", "partcoef", "wmdegree", "betwcent"]
 
 # Loop over action proportions and correlate them to network measures
 for row_item in ntwrkmsrs:  # cells containing network measures
     for col_item in roles:  # cells containing action proportions
         string = "{} ~ {}".format(row_item, col_item)
-        print(string)
         md = smf.mixedlm(
             string, data_ntwrk, groups=data_ntwrk["name"]
         )  # create linear mixed model
@@ -261,7 +238,7 @@ for row_item in ntwrkmsrs:  # cells containing network measures
             )
             print("Std. B: " + str(mdf.params[1]))
             print("P-value: " + str(mdf.pvalues[1]))
-            print("Bonferroni-corrected P: " + str(mdf.pvalues[1].astype(float) * 30))
+            print("Bonferroni-corrected P: " + str(mdf.pvalues[1].astype(float) * (len(ntwrkmsrs)*len(roles))))
 
 # Save output file
 output.to_excel("output.xlsx")
@@ -288,9 +265,9 @@ netwmeasures = [
     "within-module degree",
     "betweenness centrality",
 ]
-hubtypes = ["chair", "skeptical", "expert", "clarifying", "connecting", "practical"]
+actiontypes = ["chair", "skeptical", "expert", "clarifying", "connecting", "practical"]
 plot = sns.heatmap(
-    mat, xticklabels=hubtypes, yticklabels=netwmeasures, center=0, cmap="magma"
+    mat, xticklabels=actiontypes, yticklabels=netwmeasures, center=0, cmap="magma"
 )
 plot.set(xlabel="Interactional role", ylabel="Network measure")
 plot.set_title("Correlations between interactional roles and network measures")
@@ -319,7 +296,8 @@ def calculate_pvalues(df):
     return pvalues
 
 
-pvals = calculate_pvalues(globmat)  # Bonferroni correction
+pvals = calculate_pvalues(globmat)
+pvals_Bonfcor = calculate_pvalues(globmat) * (len(roles)*2)
 
 # Reshape output
 globmat = globmat.iloc[
