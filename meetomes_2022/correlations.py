@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 27 13:10:21 2023
-
-
 This file includes all analyses performed as part of the "Meetomes" project. 
 After identifying six interactional roles and counting how often each of the team members produced role-specific actions, 
 we wanted to correlate the occurrence of such actions to network measures as well as meeting evaluations. For that purpose, we use this script.
@@ -17,6 +14,7 @@ __status__ = "Finished"
 ####################
 # Review History   #
 ####################
+# Reviewed by Eduarda Centeno 20230125
 
 ####################
 # Libraries        #
