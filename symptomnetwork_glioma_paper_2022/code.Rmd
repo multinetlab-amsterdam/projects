@@ -26,9 +26,11 @@ It consists of several parts:
 3. Computing the networks
 4. Figures networks and centrality
 5. Comparing subgroups with NCT
-6. Similarity between subgroups with correlations between edgelists
-7. Supplementary. Computing stability strenght and accuracy edgeweights
-8. Supplementary. Figures stability strenght and accuracy edgeweights
+6.A. Sensitivity analysis:  compare the 1A and 1B network with less nodes
+6.B. Sensitivity analysis: removing patients with multiple assessments
+7. Similarity between subgroups with correlations between edgelists
+8. Supplementary. Computing stability strenght and accuracy edgeweights
+9. Supplementary. Figures stability strenght and accuracy edgeweights
 
 #### Load libraries 
 ```{r, warning = FALSE, message = FALSE}
@@ -43,7 +45,7 @@ library(plyr); library(dplyr); library(table1); library(psych)
 First, the synthetic data is uploaded. The synthetic data is made with the Synthpop package (https://www.synthpop.org.uk). Since this data is synthetic, the results in this script can be different from the actual results in the paper. Also, because of this, the exact number of patients per subgroup, can differ from the paper. This dataset contains a synthesized set of 21 items/subscales, which will be used as nodes. Please note that these are not the raw scores of the questionnaires, but only subscales. The scores of the (sub)scales of the MOS-cog and the SF-36 have already been reversed, so that a high score equals more symptoms. If one wants to run this script with their own data, the input should be a list of variables (one variable = one node), where high scores equal more symptoms.
 
 ```{r}
-df<- read_csv("data_synthetic.csv")
+df<- read_csv("O:/Medische Neuropsychologie/GRIP op vermoeidheid/2022 symptoomnetwerk paper L+M data/1. Data/Processed/data_synthetic.csv")
 ```
 
 Defining z-scores.
@@ -126,10 +128,10 @@ network_ftg <- estimateNetwork(df_fatigued[, c(30:46)], default = "EBICglasso", 
 
 Layout setup networks 1A, 1B, 2A, 2B. Because the the fatigue status networks include a smaller amount of nodes, the layout is calculated seperately for these networks below. 
 ```{r}
-labels_12 <- c("CIS-F", "CIS-C", "CIS-M", "CIS-A", 
-               "MOS-Cog", "CES-D", 
-               "SF-PF","SF-SF","SF-RP","SF-RE", "SF-MH","SF-BP","SF-HP","SF-CiH",
-               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-SZ", "BN-DR")
+labels_12 <- c("FA-Fs", "FA-Con", "FA-Mot", "FA-Act", 
+               "Cogni", "Depr", 
+               "PhF","SocF","RolePh","RoleE", "EmotWB","Pain","HealthP","ChangeH",
+               "FutU", "Visual", "Motor", "CommD", "HA", "Seiz", "Drow")
 
 groups_12 <- c(rep("CIS", 4), rep("MOS-Cog", 1), rep("CES-D", 1),  rep("SF-36", 8), rep("BN-20", 7))
 colors_12 <- c("#0868ac", "#f0f9e8", "#bae4bc", "#43a2ca", "#7bccc4")
@@ -166,9 +168,9 @@ centralityPlot(network_gr34, include = "Strength", scale="raw", theme_bw=T, labe
 
 layout networks 3A, 3B
 ```{r}
-labels_3 <- c("MOS-Cog", "CES-D", 
-               "SF-PF","SF-SF","SF-RP","SF-RE", "SF-MH","SF-BP","SF-HP","SF-CiH",
-               "BN-FU", "BN-VD", "BN-MD", "BN-CD", "BN-HA", "BN-SZ", "BN-DR")
+labels_3 <- c("Cogni", "Depr", 
+               "PhF","SocF","RolePh","RoleE", "EmotWB","Pain","HealthP","ChangeH",
+               "FutU", "Visual", "Motor", "CommD", "HA", "Seiz", "Drow")
 
 groups_3 <- c(rep("MOS-Cog", 1), rep("CES-D", 1),  rep("SF-36", 8), rep("BN-20", 7))
 colors_3<- c("#0868ac", "#f0f9e8", "#43a2ca", "#7bccc4")
@@ -198,7 +200,6 @@ colnames(matrix_supp)[] <- labels_12
 rownames(matrix_supp)[] <- labels_12
 matrix_supp
 ```
-
 
 # 5. Comparing subgroups with NCT #########################
 
@@ -239,8 +240,8 @@ comparison3$glstrinv.sep
 comparison3$glstrinv.pval 
 ```
 
-### NCT: compare the 1A and 1B network, excluding the CIS nodes
-To solidify the difference in global strength between the non-fatigue and fatigue networks, we also compared networks of preoperative (1A) and postoperative (1B) patients after excluding the CIS nodes as a statistical check.
+# 6.A. Sensitivity analysis:  compare the 1A and 1B network with less nodes
+In the block above, we find a significant difference between network 3A and 3B. However, these networks also contain 4 less nodes than the networks 1A/1B/2A/2B. To double check whether the found difference is not becaus of the smaller amount of nodes in 3A/3B, we also do a NCT between networks 1A and 1B, also without the four CIS-nodes.
 
 ```{r}
 set.seed(1658)
@@ -266,7 +267,46 @@ comparison4$glstrinv.sep
 comparison4$glstrinv.pval 
 ```
 
-# 6. similarity: correlation between edgelists #########################
+# 6.B. Sensitivity analysis: removing patients with multiple assessments
+Here we replicate the networks 1A, 3B after excluding any cases that are included in both subgroups. There are 66 patients that are included in both subgroups 1A and 1B, those 66 are excluded from groups 1A, so there is no within patient bias. 
+There are 0 patients that are included in both subgroups 2A and 2B.
+There are 33 patients that are included in both subgroups 3A and 3B, those 33 are excluded from groups 3B, so there is no within patient bias. 
+
+#See how many patients are in both subgroups. 
+```{r}
+intersect(df_preop$random_id,df_postop$random_id)
+intersect(df_gr34$random_id,df_gr2$zisnr)
+intersect(df_non_fatigued$random_id,df_fatigued$random_id)
+```
+
+```{r}
+duplicates_prepost <- intersect(df_preop$random_id, df_postop$random_id)
+df_preop_minus66 <- df_preop[ ! df_preop$random_id %in% duplicates_prepost, ]
+
+duplicates_fatigue <- intersect(df_non_fatigued$random_id,df_fatigued$random_id)
+df_fatigued_minus33 <- df_fatigued[ ! df_fatigued$random_id %in% duplicates_fatigue, ]
+
+# estimate networks
+network_preop_minus33 <- estimateNetwork(df_preop_minus66[, c(26:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod ="spearman")
+network_ftg_minus33 <- estimateNetwork(df_fatigued_minus33[, c(30:46)], default = "EBICglasso", tuning = 0.25, threshold = FALSE, corMethod = "spearman")
+
+#NCT to see wether the found difference between networsk are similar
+set.seed(1)
+comparison_1ab_noduplicates <- NCT(network_preop_minus33, network_postop, it=100, paired=FALSE, weighted=TRUE, test.edges=FALSE, test.centrality=TRUE, centrality = c("strength"), nodes= "all", progressbar=FALSE)
+
+comparison_1ab_noduplicates$glstrinv.real 
+comparison_1ab_noduplicates$glstrinv.sep 
+comparison_1ab_noduplicates$glstrinv.pval 
+
+set.seed(1)
+comparison_3ab_noduplicates <- NCT(network_no_ftg, network_ftg_minus33, it=100, paired=FALSE, weighted=TRUE, test.edges=FALSE, test.centrality=TRUE, centrality = c("strength"), nodes= "all", progressbar=FALSE)
+
+comparison_3ab_noduplicates$glstrinv.real 
+comparison_3ab_noduplicates$glstrinv.sep 
+comparison_3ab_noduplicates$glstrinv.pval     
+```
+
+# 7. similarity: correlation between edgelists #########################
 
 ### 1A. peroperative versus 1B. postoperative
 ```{r}
@@ -352,7 +392,7 @@ case_drop_boot_ftg <- bootnet(network_ftg, nBoot=1000, nCores=8, type="case", st
 cs_bs_fatigued <- corStability(case_drop_boot_ftg)
 ```
 
-# 8. Supplementary. Figures stability strenght and accuracy edgeweights #########################
+# 9. Supplementary. Figures stability strenght and accuracy edgeweights #########################
 
 ```{r eval=FALSE} 
 #1A. preoperative
