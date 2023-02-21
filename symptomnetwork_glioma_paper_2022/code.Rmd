@@ -7,8 +7,7 @@ output: html_document
 
 #### Email: j.rottgering@amsterdamumc.nl
 #### Purpose of script: 
-Analyses of the 2022 manuscript on symptom networks in glioma patients.
-
+Analyses of the 2023 manuscript on symptom networks in glioma patients.
 
 #### Status:
 Finished
