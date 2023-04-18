@@ -1,5 +1,5 @@
-## paper title
-### Authors list
+## The relationship between pathological brain activity and functional network connectivity in glioma patients
+### Mona LM Zimmermann, Lucas C Breedt, Eduarda GZ Centeno, Jaap C Reijneveld, Fernando AN Santos, Cornelis J Stam, Marike R van Lingen, Menno M Schoonheim, Arjan Hillebrand, Linda Douw
 
 Scripts used in [paper link] 
 
