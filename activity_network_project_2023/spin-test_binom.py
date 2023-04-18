@@ -27,8 +27,8 @@ __status__ = "Finished"
 
 # Third party imports  ###
 import pandas as pd #version 1.1.5
-import numpy as np
-import scipy.io as sio
+import numpy as np # version 1.23.5
+import scipy.io as sio # version 1.9.3
 
 
 

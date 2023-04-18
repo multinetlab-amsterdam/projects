@@ -26,28 +26,97 @@ __status__ = "Finished"
 from datetime import datetime
 
 # Third party imports ###
-import numpy as np
+import numpy as np # version 1.23.5
 import pandas as pd  # version 1.1.5
-import matplotlib.pyplot as plt
-import seaborn as sns  # not used?
-import statsmodels.api as sm  # not used?
-import statsmodels.formula.api as smf
-from statsmodels.stats.diagnostic import het_white  # not used?
-import statsmodels.stats.multitest
-import scipy.stats as stats  # not used?
-from scipy.stats import zscore  # not used?
-from scipy.stats import pearsonr
-from scipy.stats import ttest_1samp
-from scipy.stats import ttest_ind
+import matplotlib.pyplot as plt # version 3.6.2
+import statsmodels.formula.api as smf # version 0.13.2
+import statsmodels.stats.multitest # version 0.13.2
+from scipy.stats import pearsonr # version 1.9.3
+from scipy.stats import ttest_1samp, shapiro, wilcoxon, ttest_ind, mannwhitneyu # version 1.9.3
+
+#%%
+
+####################
+# DATAFRAME IMPORT #
+####################
+
+####################
+# Patients #
+####################
+
+#All patients (N = 84), all regions 
+df_all = pd.read_csv("path/to/csv_file.csv")
+
+#N = 67 patients (unilateral tumors, 12% overlap), tumoral regions
+df_peritumoral = pd.read_csv("path/to/csv_file.csv")
+
+#N = 67 patients (unilateral tumors, 12% overlap), non-tumoral homologue regions
+df_homologue = pd.read_csv("path/to/csv_file.csv")
+
+#N = 84 patients, non-umoral regions (0% overlap)
+df_non_tum = pd.read_csv("path/to/csv_file.csv")
+
+#%%
+
+####################
+# HCs #
+####################
+
+#HCs (N = 61) --> matched on sex and age on the patients 
+df_HC = pd.read_csv("path/to/csv_file.csv")
+
+#%%
+
+####################
+# Patients subgroups #
+####################
+
+IDH_codel_peri = pd.read_csv("path/to/csv_file.csv")
+IDH_codel_hom = pd.read_csv("path/to/csv_file.csv")
+IDH_codel_non_tum = pd.read_csv("path/to/csv_file.csv")
+
+IDH_noncodel_peri = pd.read_csv("path/to/csv_file.csv")
+IDH_noncodel_hom = pd.read_csv("path/to/csv_file.csv")
+IDH_noncodel_non_tum = pd.read_csv("path/to/csv_file.csv")
+
+IDH_wt_peri = pd.read_csv("path/to/csv_file.csv")
+IDH_wt_hom = pd.read_csv("path/to/csv_file.csv")
+IDH_wt_non_tum = pd.read_csv("path/to/csv_file.csv")
 
 
 # %%
+####################
+# Standradized dataframes #
+####################
+
+#These dataframes were standardized on themselves to be able to run the LMM analysis to get std betas (as a means of effect size)
+
+####################
+# Main dataframes #
+####################
+
+df_peri_z = pd.read_csv("path/to/csv_file.csv")
+df_hom_z = pd.read_csv("path/to/csv_file.csv")
+df_non_tum_z = pd.read_csv("path/to/csv_file.csv")
+df_HC_z = pd.read_csv("path/to/csv_file.csv")
+
+####################
+# Patients subgroups #
+####################
+
+df_IDH_codel_non_tum_z = pd.read_csv("path/to/csv_file.csv")
+df_IDH_noncodel_non_tum_z = pd.read_csv("path/to/csv_file.csv")
+df_IDH_wt_non_tum_z = pd.read_csv("path/to/csv_file.csv")
+
+
+
+#%%
 
 #########################
 # --- LINEAR MIXED MODELS TO TEST RELATIONSHIPS --- #
 #########################
 
-def mixed_model(df, metric_activity, area, group):
+def mixed_model(df, metric_activity, output_dir, area, group):
     """
     Function to statistically investigate the relationship between functional
     network metrics (EC and CC) and neural activity with a linear mixed model.
@@ -60,6 +129,8 @@ def mixed_model(df, metric_activity, area, group):
         dataframe containing the data on network and activity.
     metric_activity : str,
         determines the activity metric that should be investigated (BB, BB_welch, offset, slope)
+    output_dir:str, 
+        path to directory where the results should be stored
     area : str,
         determines the are that is being investigated (whole brain, peritumoral, non-peritumoral homologue)
     group : str,
@@ -70,23 +141,16 @@ def mixed_model(df, metric_activity, area, group):
     None.
 
     """
-    now = datetime.now()
+    #now = datetime.now()
     li = []
-    for freq in ["alpha", "delta", "theta"]:
+    for freq in ["lower_alpha", "delta", "theta"]:
         for den in ["02", "03"]:
+            print(f"{freq}_{den}")
             # fit a linear mixed model with subjects as random intercept
             model = smf.mixedlm(
-                metric_activity
-                + "_z ~ EC_z_"
-                + freq
-                + "_"
-                + den
-                + "+ CC_z_"
-                + freq
-                + "_"
-                + den,
+                metric_activity + "_z ~ EC_" + freq + "_" + den + "_z + CC_"+freq + "_" + den + "_z",
                 df,
-                groups=df["sub"],
+                groups=df["sub"]
             )
             results = model.fit()
 
@@ -112,19 +176,8 @@ def mixed_model(df, metric_activity, area, group):
     df_final = pd.concat(li, axis=0)
 
     # save df
-    df_final.to_csv(
-        "/path/to/goal/directory/"
-        + now.strftime("%Y%m%d")
-        + "_desired_folder_name/"
-        + now.strftime("%Y%m%d")
-        + "_"
-        + area
-        + "_"
-        + group
-        + "_"
-        + metric_activity
-        + ".csv"
-    )
+    df_final.to_csv(f"{output_dir}mixed_model_{area}_{group}_{metric_activity}.csv")
+    
 
 
 # %%
@@ -132,14 +185,16 @@ def mixed_model(df, metric_activity, area, group):
 # PATIENTS ANALYSIS
 ########################
 
+output_dir = "path/to/coutput_folder"
+
 # Peritumoral
-mixed_model(df_peritumoral, "offset", "peritumoral", "patients")
+mixed_model(df_peritumoral, "offset",output_dir, "peritumoral", "patients")
 
 # Non-peritumoral homologue
-mixed_model(df_homologue, "offset", "homologue", "patients")
+mixed_model(df_homologue, "offset", output_dir,"homologue", "patients")
 
 # Rest of the brain (all non-tumoral areas)
-mixed_model(df_non_tum, "offset", "non_tum", "patients")
+mixed_model(df_non_tum, "offset", output_dir, "non_tum", "patients")
 
 # %%
 
@@ -147,7 +202,7 @@ mixed_model(df_non_tum, "offset", "non_tum", "patients")
 # HCs ANALYSIS
 ########################
 
-mixed_model(df_master_HC, "offset", "whole_brain", "HC")
+mixed_model(df_HC, "offset", output_dir, "whole_brain", "HC")
 
 
 # %%
@@ -157,9 +212,9 @@ mixed_model(df_master_HC, "offset", "whole_brain", "HC")
 ########################
 
 # IDH wildtype
-mixed_model(IDH_wt_rest, "offset", "rest", "IDH_wt")
-mixed_model(IDH_mut_codeleted_rest, "offset", "rest", "IDH_codeleted")
-mixed_model(IDH_mut_noncodeleted_rest, "offset", "rest", "IDH_noncodeleted")
+mixed_model(IDH_wt_non_tum, "offset", output_dir, "rest", "IDH_wt")
+mixed_model(IDH_codel_non_tum, "offset", output_dir, "rest", "IDH_codeleted")
+mixed_model(IDH_codel_non_tum, "offset", output_dir, "rest", "IDH_noncodeleted")
 
 
 # %%
@@ -167,17 +222,20 @@ mixed_model(IDH_mut_noncodeleted_rest, "offset", "rest", "IDH_noncodeleted")
 ########################
 # STANDARDIZED ANALYSIS (TO OBTAIN BETA COEFFICIENTS)
 ########################
+
+output_dir = "path/to/output_folder/"
+
 ### Effect size 1: Standardization of coefficients (betas)###
-mixed_model(df_non_tum_z, "offset", "non_tum", "patients")
-mixed_model(df_master_HC_z, "offset", "whole_brain", "HC")
-mixed_model(df_IDH_wt_z, "offset", "rest", "IDH_wt")
-mixed_model(df_IDH_mut_codel_z, "offset", "rest", "IDH_codeleted")
-mixed_model(df_IDH_mut_noncodel_z, "offset", "rest", "IDH_noncodeleted")
+mixed_model(df_non_tum_z, "offset",output_dir, "non_tum", "patients_z")
+mixed_model(df_HC_z, "offset", output_dir, "whole_brain", "HC_z")
+mixed_model(df_IDH_wt_non_tum_z, "offset", output_dir, "rest", "IDH_wt_z")
+mixed_model(df_IDH_codel_non_tum_z, "offset", output_dir, "rest", "IDH_codeleted_z")
+mixed_model(df_IDH_noncodel_non_tum_z, "offset", output_dir, "rest", "IDH_noncodeleted_z")
 
 # %%
 
 
-def mixed_model_interactions(df, metric_activity, area):
+def mixed_model_interactions(df, metric_activity, output_dir, area):
     """
     Function to statistically investigate the relationship between functional
     network metrics (EC and CC) and neural activityand differences between the groups
@@ -191,6 +249,8 @@ def mixed_model_interactions(df, metric_activity, area):
         dataframe containing the data on network and activity.
     metric_activity : str,
         determines the activity metric that should be investigated (BB, BB_welch, offset, slope)
+    output_dir:str, 
+        path to directory where the results should be stored
     area : str,
         determines the are that is being investigated (whole brain, peritumoral, non-peritumoral homologue)
 
@@ -202,11 +262,11 @@ def mixed_model_interactions(df, metric_activity, area):
     """
     now = datetime.now()
     li = []
-    for freq in ["delta", "theta", "alpha"]:
+    for freq in ["delta", "theta", "lower_alpha"]:
         for den in ["02", "03"]:
             # mixed model with random intercept for subjects; interaction terms are added to investigate differences between patients and HCs
             model = smf.mixedlm(
-                f"{metric_activity}_z ~ EC_z_{freq}_{den} + CC_z_{freq}_{den} + C(group) + C(group)*EC_z_{freq}_{den} + C(group)*CC_z_{freq}_{den}",
+                f"{metric_activity}_z ~ EC_{freq}_{den}_z + CC_{freq}_{den}_z + C(group) + C(group)*EC_{freq}_{den}_z + C(group)*CC_{freq}_{den}_z",
                 df,
                 groups="sub",
             )
@@ -235,37 +295,29 @@ def mixed_model_interactions(df, metric_activity, area):
 
     # save df
     df_final.to_csv(
-        "/path/to/goal/directory/"
-        + now.strftime("%Y%m%d")
-        + "_desired_folder_name/"
-        + now.strftime("%Y%m%d")
-        + "_"
-        + area
-        + "_interaction_"
-        + metric_activity
-        + ".csv"
-    )
+        f"{output_dir}{area}_interaction_{metric_activity}.csv")
 
 
 # %%
 
 # Make dataframes containing both patients and HC data in preparation for
 # the interaction analysis
+df_HC["group"] = "HCs"
+df_HC["sub"] = "Case_" + df_HC["sub"].astype(str)
 
 # --- Peritumoral dataframes --- #
 df_peritumoral["group"] = "patients"
-df_peritumoral_all = pd.concat([df_peritumoral, df_master_HC], axis=0)
+df_peritumoral_all = pd.concat([df_peritumoral, df_HC], axis=0)
 df_peritumoral_all.reset_index(drop=True, inplace=True)
 
 # --- Non-Peritumoral Homologue dataframes --- #
 df_homologue["group"] = "patients"
-df_homologue_all = pd.concat([df_homologue, df_master_HC], axis=0)
+df_homologue_all = pd.concat([df_homologue, df_HC], axis=0)
 df_homologue_all.reset_index(drop=True, inplace=True)
 
 # --- All Non-peritumoral areas --- #
 df_non_tum["group"] = "patients"
-df_master_HC["group"] = "HCs"
-df_non_tum_all = pd.concat([df_non_tum, df_master_HC], axis=0)
+df_non_tum_all = pd.concat([df_non_tum, df_HC], axis=0)
 df_non_tum_all.reset_index(drop=True, inplace=True)
 
 
@@ -273,15 +325,18 @@ df_non_tum_all.reset_index(drop=True, inplace=True)
 ########################
 # INTERACTION ANALYSIS
 ########################
+output_dir = "path/to/output_folder/"
 
 # --- Peritumoral areas --- #
-mixed_model_interactions(df_peritumoral_all, "offset", "peritumor")
+mixed_model_interactions(df_peritumoral_all, "offset", output_dir, "peritumor")
 
+#%%
 # --- Homologue areas --- #
-mixed_model_interactions(df_homologue_all, "offset", "homologue")
+mixed_model_interactions(df_homologue_all, "offset", output_dir, "homologue")
 
+#%%
 # --- Nontumoral areas --- #
-mixed_model_interactions(df_non_tum_all, "offset", "non-tumoral")
+mixed_model_interactions(df_non_tum_all, "offset", output_dir,"non-tumoral")
 
 # %%
 ########################
@@ -292,10 +347,10 @@ import glob
 import statsmodels.stats.multitest # not used?
 
 # path only to non-interaction models --> this is for non-interaction models
-# files = glob.glob('/path/to/files/with/model/results/*.csv')#comment/uncomment depending on whether you want to correct the norma model of the
+files = glob.glob("path/to/folder/with/results/*.csv")#comment/uncomment depending on whether you want to correct the norma model or the interaction model
 
 # path to interaction analyses
-files = glob.glob("/path/to/files/with/interaction/results/*.csv")
+#files = glob.glob("path/to/folder/with/interaction/results/*.csv")
 
 for file in files:
     ##print(name)
@@ -304,10 +359,10 @@ for file in files:
     df_nan = df.loc[df["p"].isna()]
     df_not_nan = df.loc[~df["p"].isna()]
 
-    # df_IVs = df_not_nan.loc[df_not_nan['index'].str.startswith(('CC', 'EC'))]
-    df_IVs = df_not_nan.loc[
-        df_not_nan["index"].str.startswith(("CC", "EC", "C(group)[T.patients]:"))
-    ]
+    df_IVs = df_not_nan.loc[df_not_nan['index'].str.startswith(('CC', 'EC'))] #uncomment when looking at normal analysis
+    # df_IVs = df_not_nan.loc[
+    #     df_not_nan["index"].str.startswith(("CC", "EC", "C(group)[T.patients]:")) #uncomment when looking at intercation analysis
+    # ]
 
     # correct only with p-values from IVs (EC, CC)
     df_IVs["corrected_only_IVs"] = statsmodels.stats.multitest.fdrcorrection(
@@ -339,7 +394,7 @@ for file in files:
 # %%
 
 
-def make_corrs(df, group, metric, metric_activity):
+def make_corrs(df, group, metric, metric_activity, output_dir):
     """
     Description?
 
@@ -354,6 +409,8 @@ def make_corrs(df, group, metric, metric_activity):
         network metric (e.g. EC, CC) that should be correlated to activity (e.g. offset)
     metric_activity : str,
         activity metric (e.g. offset) that should be correlated to network metrics (e.g. EC, CC)
+    output_dir : str, 
+        path to directory where correlations should be stored 
 
     Returns
     -------
@@ -368,29 +425,30 @@ def make_corrs(df, group, metric, metric_activity):
     # group the dataframe by subject
     df_grouped = df.groupby("sub")
     li = []
-    for freq in ["delta", "theta", "alpha"]:
+    for freq in ["delta", "theta", "lower_alpha"]:
         for d in ["02", "03"]:
             # per subject, correlate the activity metric with the network metric and extract the correlation coefficient
             corrs = pd.DataFrame(
                 df_grouped.apply(
                     lambda x: pearsonr(
-                        x[f"{metric}_z_{freq}_{d}"], x[f"{metric_activity}_z"]
-                    )[0]
-                )
-            )
+                        x[f"{metric}_{freq}_{d}_z"], x[f"{metric_activity}_z"]
+                    )[0]))
+                
+            
             corrs.columns = [f"corrs_{freq}_{d}"]
 
             li.append(corrs)
+            
     # put all correlations into one dataframe (all frequencies and densities) and save it
     df_corrs = pd.concat(li, axis=1)
     df_corrs.to_csv(
-        f"_desired_folder_name/df_{metric}_{metric_activity}_within_sub_corrs_{group}.csv"
+        f"{output_dir}20230803_df_{metric}_{metric_activity}_within_sub_corrs_{group}.csv"
     )
 
     # Fisher z-transform the correlations and save the dataframe
     df_corrs_z = pd.DataFrame(df_corrs.apply(lambda x: np.arctanh(x)))
     df_corrs_z.to_csv(
-        f"_desired_folder_name/df_{metric}_{metric_activity}_within_sub_corrs_z_{group}.csv"
+        f"{output_dir}20230803_df_{metric}_{metric_activity}_within_sub_corrs_z_{group}.csv"
     )
 
     return (df_corrs, df_corrs_z)
@@ -400,20 +458,21 @@ def make_corrs(df, group, metric, metric_activity):
 ########################
 # WHOLE GROUP PATIENTS ANALYSIS: Non-tumoral areas
 ########################
+output_dir = "path/to/output_folder/"
+
 df_corrs_patient_rest_CC, df_corrs_z_patient_rest_CC = make_corrs(
-    df_non_tum, "patients_non_tum", "CC", "offset"
+    df_non_tum, "patients_non_tum", "CC", "offset", output_dir
 )
 df_corrs_patient_rest_EC, df_corrs_z_patient_rest_EC = make_corrs(
-    df_non_tum, "patients_non_tum", "EC", "offset"
+    df_non_tum, "patients_non_tum", "EC", "offset", output_dir
 )
 
 
 ########################
 # HCs analysis
 ########################
-df_corrs_HCs_CC, df_corrs_z_HCs_CC = make_corrs(df_master_HC, "HCs", "CC", "offset")
-df_corrs_HCs_EC, df_corrs_z_HCs_EC = make_corrs(df_master_HC, "HCs", "EC", "offset")
-
+df_corrs_HCs_CC, df_corrs_z_HCs_CC = make_corrs(df_HC, "HCs", "CC", "offset", output_dir)
+df_corrs_HCs_EC, df_corrs_z_HCs_EC = make_corrs(df_HC, "HCs", "EC", "offset", output_dir)
 
 # %%
 ########################
@@ -422,26 +481,26 @@ df_corrs_HCs_EC, df_corrs_z_HCs_EC = make_corrs(df_master_HC, "HCs", "EC", "offs
 
 # --- IDH-wildtype --- #
 df_corrs_wt_rest_CC, df_corrs_z_wt_rest_CC = make_corrs(
-    IDH_wt_rest, "IDH_wt", "CC", "offset"
+    IDH_wt_non_tum, "IDH_wt", "CC", "offset", output_dir
 )
 df_corrs_wt_rest_EC, df_corrs_z_wt_rest_EC = make_corrs(
-    IDH_wt_rest, "IDH_wt", "EC", "offset"
+    IDH_wt_non_tum, "IDH_wt", "EC", "offset", output_dir
 )
 
 # --- IDH-mutant, 1p19q-codeleted --- #
 df_corrs_codel_rest_CC, df_corrs_z_codel_rest_CC = make_corrs(
-    IDH_mut_codeleted_rest, "IDH_mut_codeleted", "CC", "offset"
+    IDH_codel_non_tum, "IDH_mut_codeleted", "CC", "offset", output_dir
 )
 df_corrs_codel_rest_EC, df_corrs_z_codel_rest_EC = make_corrs(
-    IDH_mut_codeleted_rest, "IDH_mut_codeleted", "EC", "offset"
+    IDH_codel_non_tum, "IDH_mut_codeleted", "EC", "offset", output_dir
 )
 
 # --- IDH-mutant, 1p19q-noncodeleted --- #
 df_corrs_noncodel_rest_CC, df_corrs_z_noncodel_rest_CC = make_corrs(
-    IDH_mut_noncodeleted_rest, "IDH_mut_noncodeleted", "CC", "offset"
+    IDH_noncodel_non_tum, "IDH_mut_noncodeleted", "CC", "offset", output_dir
 )
 df_corrs_noncodel_rest_EC, df_corrs_z_noncodel_rest_EC = make_corrs(
-    IDH_mut_noncodeleted_rest, "IDH_mut_noncodeleted", "EC", "offset"
+    IDH_noncodel_non_tum, "IDH_mut_noncodeleted", "EC", "offset", output_dir
 )
 
 
@@ -450,7 +509,7 @@ df_corrs_noncodel_rest_EC, df_corrs_z_noncodel_rest_EC = make_corrs(
 # GROUP LEVEL CORRELATION PREPARATION
 ########################
 
-# To obtain group-level correlation coefficients we used this tool: https://www.psychometrica.de/correlation.html (Sectie 8)
+# To obtain group-level correlation coefficients we used this tool: https://www.psychometrica.de/correlation.html (Section 8)
 # Here, we calculate the number of regions involved in the correlation per patients (for the weighting)
 
 # --- Non-tumoral areas --- #
@@ -459,20 +518,21 @@ nr_rois_non_tum.reset_index(inplace=True)
 nr_rois_non_tum.columns = ["sub", "nr_rois"]
 nr_rois_non_tum.sort_values("sub", inplace=True)
 
+#%%
 # --- IDH-wildtype --- #
-nr_rois_IDH_wt = pd.DataFrame(IDH_wt_rest["sub"].value_counts())
+nr_rois_IDH_wt = pd.DataFrame(IDH_wt_non_tum["sub"].value_counts())
 nr_rois_IDH_wt.reset_index(inplace=True)
 nr_rois_IDH_wt.columns = ["sub", "nr_rois"]
 nr_rois_IDH_wt.sort_values("sub", inplace=True)
 
 # --- IDH-mutant, 1p19q-codeleted --- #
-nr_rois_IDH_mut_codel = pd.DataFrame(IDH_mut_codeleted_rest["sub"].value_counts())
+nr_rois_IDH_mut_codel = pd.DataFrame(IDH_codel_non_tum["sub"].value_counts())
 nr_rois_IDH_mut_codel.reset_index(inplace=True)
 nr_rois_IDH_mut_codel.columns = ["sub", "nr_rois"]
 nr_rois_IDH_mut_codel.sort_values("sub", inplace=True)
 
 # --- IDH-mutant, 1p19q-noncodeleted --- #
-nr_rois_IDH_mut_noncodel = pd.DataFrame(IDH_mut_noncodeleted_rest["sub"].value_counts())
+nr_rois_IDH_mut_noncodel = pd.DataFrame(IDH_noncodel_non_tum["sub"].value_counts())
 nr_rois_IDH_mut_noncodel.reset_index(inplace=True)
 nr_rois_IDH_mut_noncodel.columns = ["sub", "nr_rois"]
 nr_rois_IDH_mut_noncodel.sort_values("sub", inplace=True)
@@ -488,31 +548,33 @@ nr_rois_IDH_mut_noncodel.sort_values("sub", inplace=True)
 # WHOLE GROUP PATIENTS ANALYSIS: Non-tumoral areas
 ########################
 
-CC_t_non_tum, CC_p_non_tum = ttest_1samp(df_corrs_z_non_tum_CC, 0)
+CC_t_non_tum, CC_p_non_tum = wilcoxon(df_corrs_z_patient_rest_CC)
 df_CC_corr_against_0_non_tum = pd.concat(
     [pd.DataFrame(CC_t_non_tum), pd.DataFrame(CC_p_non_tum)], axis=1
 )
 df_CC_corr_against_0_non_tum.columns = ["t", "p"]
 
-EC_t_non_tum, EC_p_non_tum = ttest_1samp(df_corrs_z_non_tum_EC, 0)
+EC_t_non_tum, EC_p_non_tum = wilcoxon(df_corrs_z_patient_rest_EC)
 df_EC_corr_against_0_non_tum = pd.concat(
     [pd.DataFrame(EC_t_non_tum), pd.DataFrame(EC_p_non_tum)], axis=1
 )
 df_EC_corr_against_0_non_tum.columns = ["t", "p"]
 
+#%%
+test = wilcoxon(df_corrs_z_patient_rest_CC["corrs_delta_02"])
 # %%
 
 ########################
 # HCs analysis
 ########################
 
-CC_t_HCs, CC_p_HCs = ttest_1samp(df_corrs_z_HCs_CC, 0)
+CC_t_HCs, CC_p_HCs = wilcoxon(df_corrs_z_HCs_CC)
 df_CC_corr_against_0_HCs = pd.concat(
     [pd.DataFrame(CC_t_HCs), pd.DataFrame(CC_p_HCs)], axis=1
 )
 df_CC_corr_against_0_HCs.columns = ["t", "p"]
 
-EC_t_HCs, EC_p_HCs = ttest_1samp(df_corrs_z_HCs_EC, 0)
+EC_t_HCs, EC_p_HCs = wilcoxon(df_corrs_z_HCs_EC)
 df_EC_corr_against_0_HCs = pd.concat(
     [pd.DataFrame(EC_t_HCs), pd.DataFrame(EC_p_HCs)], axis=1
 )
@@ -524,13 +586,13 @@ df_EC_corr_against_0_HCs.columns = ["t", "p"]
 ########################
 
 # --- IDH-wildtype --- #
-CC_t_wt_rest, CC_p_wt_rest = ttest_1samp(df_corrs_z_wt_rest_CC, 0)
+CC_t_wt_rest, CC_p_wt_rest = wilcoxon(df_corrs_z_wt_rest_CC)
 df_CC_corr_against_0_wt = pd.concat(
     [pd.DataFrame(CC_t_wt_rest), pd.DataFrame(CC_p_wt_rest)], axis=1
 )
 df_CC_corr_against_0_wt.columns = ["t", "p"]
 
-EC_t_wt_rest, EC_p_wt_rest = ttest_1samp(df_corrs_z_wt_rest_EC, 0)
+EC_t_wt_rest, EC_p_wt_rest = wilcoxon(df_corrs_z_wt_rest_EC)
 df_EC_corr_against_0_wt = pd.concat(
     [pd.DataFrame(EC_t_wt_rest), pd.DataFrame(EC_p_wt_rest)], axis=1
 )
@@ -538,26 +600,26 @@ df_EC_corr_against_0_wt.columns = ["t", "p"]
 
 
 # --- IDH-mutant, 1p19q-codeleted --- #
-CC_t_codel_rest, CC_p_codel_rest = ttest_1samp(df_corrs_z_codel_rest_CC, 0)
+CC_t_codel_rest, CC_p_codel_rest = wilcoxon(df_corrs_z_codel_rest_CC)
 df_CC_corr_against_0_codel = pd.concat(
     [pd.DataFrame(CC_t_codel_rest), pd.DataFrame(CC_p_codel_rest)], axis=1
 )
 df_CC_corr_against_0_codel.columns = ["t", "p"]
 
-EC_t_codel_rest, EC_p_codel_rest = ttest_1samp(df_corrs_z_codel_rest_EC, 0)
+EC_t_codel_rest, EC_p_codel_rest = wilcoxon(df_corrs_z_codel_rest_EC)
 df_EC_corr_against_0_codel = pd.concat(
     [pd.DataFrame(EC_t_codel_rest), pd.DataFrame(EC_p_codel_rest)], axis=1
 )
 df_EC_corr_against_0_codel.columns = ["t", "p"]
 
 # --- IDH-mutant, 1p19q-noncodeleted --- #
-CC_t_noncodel_rest, CC_p_noncodel_rest = ttest_1samp(df_corrs_z_noncodel_rest_CC, 0)
+CC_t_noncodel_rest, CC_p_noncodel_rest = wilcoxon(df_corrs_z_noncodel_rest_CC)
 df_CC_corr_against_0_noncodel = pd.concat(
     [pd.DataFrame(CC_t_noncodel_rest), pd.DataFrame(CC_p_noncodel_rest)], axis=1
 )
 df_CC_corr_against_0_noncodel.columns = ["t", "p"]
 
-EC_t_noncodel_rest, EC_p_noncodel_rest = ttest_1samp(df_corrs_z_noncodel_rest_EC, 0)
+EC_t_noncodel_rest, EC_p_noncodel_rest = wilcoxon(df_corrs_z_noncodel_rest_EC)
 df_EC_corr_against_0_noncodel = pd.concat(
     [pd.DataFrame(EC_t_noncodel_rest), pd.DataFrame(EC_p_noncodel_rest)], axis=1
 )
@@ -568,6 +630,7 @@ df_EC_corr_against_0_noncodel.columns = ["t", "p"]
 # FDR CORRECTION
 ########################
 
+output_dir = "path/to/output_folder/"
 
 ########################
 # WHOLE GROUP PATIENTS ANALYSIS: Non-tumoral areas
@@ -578,8 +641,8 @@ df_CC_corr_against_0_non_tum[
 df_EC_corr_against_0_non_tum[
     "FDR_corrected_p"
 ] = statsmodels.stats.multitest.fdrcorrection(df_EC_corr_against_0_non_tum["p"])[1]
-df_CC_corr_against_0_non_tum.to_csv("desired_folder_name/df_CC_patients_against_0.csv")
-df_EC_corr_against_0_non_tum.to_csv("_desired_folder_name/df_EC_patients_against_0.csv")
+df_CC_corr_against_0_non_tum.to_csv(f"{output_dir}df_CC_patients_against_0.csv")
+df_EC_corr_against_0_non_tum.to_csv(f"{output_dir}df_EC_patients_against_0.csv")
 
 
 ########################
@@ -591,8 +654,8 @@ df_CC_corr_against_0_HCs["FDR_corrected_p"] = statsmodels.stats.multitest.fdrcor
 df_EC_corr_against_0_HCs["FDR_corrected_p"] = statsmodels.stats.multitest.fdrcorrection(
     df_EC_corr_against_0_HCs["p"]
 )[1]
-df_CC_corr_against_0_HCs.to_csv("desired_folder_name/df_CC_HCs_against_0.csv")
-df_EC_corr_against_0_HCs.to_csv("desired_folder_name/df_EC_HCs_against_0.csv")
+df_CC_corr_against_0_HCs.to_csv(f"{output_dir}df_CC_HCs_against_0.csv")
+df_EC_corr_against_0_HCs.to_csv(f"{output_dir}df_EC_HCs_against_0.csv")
 
 # %%
 
@@ -607,8 +670,8 @@ df_CC_corr_against_0_wt["FDR_corrected_p"] = statsmodels.stats.multitest.fdrcorr
 df_EC_corr_against_0_wt["FDR_corrected_p"] = statsmodels.stats.multitest.fdrcorrection(
     df_EC_corr_against_0_wt["p"]
 )[1]
-df_CC_corr_against_0_wt.to_csv("/desired_folder_name/df_CC_wt_against_0.csv")
-df_EC_corr_against_0_wt.to_csv("/desired_folder_name/df_EC_wt_against_0.csv")
+df_CC_corr_against_0_wt.to_csv(f"{output_dir}df_CC_wt_against_0.csv")
+df_EC_corr_against_0_wt.to_csv(f"{output_dir}df_EC_wt_against_0.csv")
 
 # --- IDH mutant, 1p19q-codeleted --- #
 df_CC_corr_against_0_codel[
@@ -617,8 +680,8 @@ df_CC_corr_against_0_codel[
 df_EC_corr_against_0_codel[
     "FDR_corrected_p"
 ] = statsmodels.stats.multitest.fdrcorrection(df_EC_corr_against_0_codel["p"])[1]
-df_CC_corr_against_0_codel.to_csv("/desired_folder_name/df_CC_codel_against_0.csv")
-df_EC_corr_against_0_codel.to_csv("/desired_folder_name/df_EC_codel_against_0.csv")
+df_CC_corr_against_0_codel.to_csv(f"{output_dir}df_CC_codel_against_0.csv")
+df_EC_corr_against_0_codel.to_csv(f"{output_dir}df_EC_codel_against_0.csv")
 
 # --- IDH mutant, 1p19q-noncodeleted --- #
 df_CC_corr_against_0_noncodel[
@@ -628,10 +691,10 @@ df_EC_corr_against_0_noncodel[
     "FDR_corrected_p"
 ] = statsmodels.stats.multitest.fdrcorrection(df_EC_corr_against_0_noncodel["p"])[1]
 df_CC_corr_against_0_noncodel.to_csv(
-    "/desired_folder_name/df_CC_noncodel_against_0.csv"
+    f"{output_dir}df_CC_noncodel_against_0.csv"
 )
 df_EC_corr_against_0_noncodel.to_csv(
-    "/desired_folder_name/df_EC_noncodel_against_0.csv"
+   f"{output_dir}df_EC_noncodel_against_0.csv"
 )
 
 
@@ -640,8 +703,8 @@ df_EC_corr_against_0_noncodel.to_csv(
 # DIFFERENCE BETWEEN FISHERS Z TRANSFORMED CORRELATIONS OF PATIENTS AND HCS
 ########################
 
-t_CC_comp_HCs_patients_rest, p_CC_comp_HCs_patients_rest = ttest_ind(
-    df_corrs_z_non_tum_CC, df_corrs_z_HCs_CC
+t_CC_comp_HCs_patients_rest, p_CC_comp_HCs_patients_rest = mannwhitneyu(
+    df_corrs_z_patient_rest_CC, df_corrs_z_HCs_CC
 )
 df_CC_corr_comp = pd.concat(
     [
@@ -652,8 +715,8 @@ df_CC_corr_comp = pd.concat(
 )
 df_CC_corr_comp.columns = ["t", "p"]
 
-t_EC_comp_HCs_patients_rest, p_EC_comp_HCs_patients_rest = ttest_ind(
-    df_corrs_z_non_tum_EC, df_corrs_z_HCs_EC
+t_EC_comp_HCs_patients_rest, p_EC_comp_HCs_patients_rest = mannwhitneyu(
+    df_corrs_z_patient_rest_EC, df_corrs_z_HCs_EC
 )
 df_EC_corr_comp = pd.concat(
     [
@@ -674,8 +737,8 @@ df_CC_corr_comp["FDR_corrected_p"] = statsmodels.stats.multitest.fdrcorrection(
 df_EC_corr_comp["FDR_corrected_p"] = statsmodels.stats.multitest.fdrcorrection(
     df_EC_corr_comp["p"]
 )[1]
-df_CC_corr_comp.to_csv("/desired_folder_name/df_CC_comp.csv")
-df_EC_corr_comp.to_csv("/desired_folder_name/df_EC_comp.csv")
+df_CC_corr_comp.to_csv("path/to/file/where/fdr/correction/should/be/stored.csv")
+df_EC_corr_comp.to_csv("path/to/file/where/fdr/correction/should/be/stored.csv")
 
 # %%
 ########################
@@ -684,17 +747,17 @@ df_EC_corr_comp.to_csv("/desired_folder_name/df_EC_comp.csv")
 
 # import correlation dataframes
 df_CC_corrs = pd.read_csv(
-    "/desired_folder_name/df_CC_offset_within_sub_corrs_patients_non_tum.csv"
+    "path/to/file/containing/correlations.csv"
 )
 df_EC_corrs = pd.read_csv(
-    "/desired_folder_name/df_EC_offset_within_sub_corrs_patients_non_tum.csv"
+    "path/to/file/containing/correlations.csv"
 )
 
 
 # %%
 
 
-def make_corrs_offset_corr(df_corrs, df_offset, metric, plot=True):
+def make_corrs_offset_corr(df_corrs, df_offset, metric, output_dir, plot=True):
     """ Description?
 
 
@@ -714,22 +777,24 @@ def make_corrs_offset_corr(df_corrs, df_offset, metric, plot=True):
     None.
 
     """
-
+    #COMMENT OR UNCOMMENT (when want to investigate entire peritumoral area)
     # average offset_z over all regions in peritumoral area
-    df_offset_avg = pd.DataFrame(
-        df_offset.groupby("sub")["offset_z"].mean()
-    )  # comment/uncomment depending on which are you want to average the offset over
+    # df_offset_avg = pd.DataFrame(
+    #     df_offset.groupby("sub")["offset_z"].mean()
+    # )  
 
+    #COMMENT OR UNCOMMENT (when want to investigate 3 highest values)
     # average only over 3 highest offset_z values
     df_offset_3_largest = pd.DataFrame(
         df_offset.groupby("sub")["offset_z"].nlargest(3)
     )  # comment/uncomment depending on which are you want to average the offset over
+    
     df_offset_avg = pd.DataFrame(
         df_offset_3_largest.groupby("sub")["offset_z"].mean()
     )  # comment/uncomment depending on which are you want to average the offset over
 
     corrs_dict = {}
-    for freq in ["alpha"]:
+    for freq in ["lower_alpha"]:
         for d in ["02", "03"]:
             # correlate peritumoral offset with the correlation between network metric and offset
             corr, p = pearsonr(df_offset_avg["offset_z"], df_corrs[f"corrs_{freq}_{d}"])
@@ -740,25 +805,58 @@ def make_corrs_offset_corr(df_corrs, df_offset, metric, plot=True):
                 plt.xlabel(f"corrs_{freq}_{d}_{metric}")
                 plt.ylabel("offset_z")
                 plt.show()
+                
     # store all correlations in one dataframe
     df_corrs = pd.DataFrame.from_dict(corrs_dict).T
     df_corrs.columns = ["corr", "p"]
-    df_corrs.to_csv(f"/desired_folder_name/df_{metric}_offset_corr.csv")
+    df_corrs.to_csv(f"/{output_dir}20231003_df_{metric}_offset_corr.csv")
 
     return df_corrs
 
 
 # %%
-########################
-# ALL PERITUMORAL AREAS
-########################
+#####################################
+# IMPORT AND PREPARE DATAFRAMES CORRs
+#####################################
+
+#PATIENTS
+#import correlation dataframes (patients non_tumoral)
+
+#[pd.read_csv...]
+
+
+#%% 
+#As the above dataframes are based on the non-tumoral dataframe that includes all subjects 
+#(also subjects with bilateral tumor and no 12% overlaps) we need to filter them to 
+#the subjects that are in the peritumoral dataframe (unilateral, only subjects that have at least one region with 12% overlaps)
+
+#PATIENTS
+df_CC_corrs = df_CC_corrs[df_CC_corrs['sub'].isin(df_peritumoral['sub'])]
+df_EC_corrs = df_EC_corrs[df_EC_corrs['sub'].isin(df_peritumoral['sub'])]
+
+#PATIENTS SUBGROUP 
+#IDH-codel peritumoral N = 11
+df_CC_corrs_IDH_codel = df_CC_corrs_IDH_codel[df_CC_corrs_IDH_codel['sub'].isin(IDH_codel_peri['sub'])]
+df_EC_corrs_IDH_codel = df_EC_corrs_IDH_codel[df_EC_corrs_IDH_codel['sub'].isin(IDH_codel_peri['sub'])]
+
+#IDH-noncodel peritumoral N = 23
+df_CC_corrs_IDH_noncodel = df_CC_corrs_IDH_noncodel[df_CC_corrs_IDH_noncodel['sub'].isin(IDH_noncodel_peri['sub'])]
+df_EC_corrs_IDH_noncodel = df_EC_corrs_IDH_noncodel[df_EC_corrs_IDH_noncodel['sub'].isin(IDH_noncodel_peri['sub'])]
+
+#IDH-wt peritumoral N = 24
+df_CC_corrs_IDH_wt = df_CC_corrs_IDH_wt[df_CC_corrs_IDH_wt['sub'].isin(IDH_wt_peri['sub'])]
+df_EC_corrs_IDH_wt = df_EC_corrs_IDH_wt[df_EC_corrs_IDH_wt['sub'].isin(IDH_wt_peri['sub'])]
+
+
+#%%
 
 ########################
 # WHOLE GROUP PATIENTS ANALYSIS: Non-tumoral areas
 ########################
+output_dir = 'path/to/output/directory'
 
-df_EC_corrs_offset = make_corrs_offset_corr(df_EC_corrs, df_peritumoral_all, "EC")
-df_CC_corrs_offset = make_corrs_offset_corr(df_CC_corrs, df_peritumoral_all, "CC")
+df_EC_corrs_offset = make_corrs_offset_corr(df_EC_corrs, df_peritumoral, "EC", output_dir, True) 
+df_CC_corrs_offset = make_corrs_offset_corr(df_CC_corrs, df_peritumoral, "CC", output_dir, True)
 
 
 # %%
@@ -768,26 +866,26 @@ df_CC_corrs_offset = make_corrs_offset_corr(df_CC_corrs, df_peritumoral_all, "CC
 
 # --- IDH-wildtype --- #
 df_EC_corrs_offset_wt = make_corrs_offset_corr(
-    df_corrs_wt_rest_EC, IDH_wt_peritumoral_all, "EC_wt"
+    df_EC_corrs_IDH_wt, IDH_wt_peri, "EC_wt", output_dir
 )
 df_CC_corrs_offset_wt = make_corrs_offset_corr(
-    df_corrs_wt_rest_CC, IDH_wt_peritumoral_all, "CC_wt"
+    df_CC_corrs_IDH_wt, IDH_wt_peri, "CC_wt", output_dir
 )
 
 # --- IDH-mutant, 1p19q-codeleted --- #
 df_EC_corrs_offset_mut_codel = make_corrs_offset_corr(
-    df_corrs_codel_rest_EC, IDH_mut_codeleted_peritumoral_all, "EC_mut_codel"
+    df_EC_corrs_IDH_codel, IDH_codel_peri, "EC_mut_codel", output_dir
 )
 df_CC_corrs_offset_mut_codel = make_corrs_offset_corr(
-    df_corrs_codel_rest_CC, IDH_mut_codeleted_peritumoral_all, "CC_mut_codel"
+    df_CC_corrs_IDH_codel, IDH_codel_peri, "CC_mut_codel", output_dir
 )
 
 # --- IDH mutant, 1p19q-noncoldeleted --- #
 df_EC_corrs_offset_mut_noncodel = make_corrs_offset_corr(
-    df_corrs_noncodel_rest_EC, IDH_mut_noncodeleted_peritumoral_all, "EC_mut_noncodel"
+    df_EC_corrs_IDH_noncodel, IDH_noncodel_peri, "EC_mut_noncodel", output_dir
 )
 df_CC_corrs_offset_mut_noncodel = make_corrs_offset_corr(
-    df_corrs_noncodel_rest_CC, IDH_mut_noncodeleted_peritumoral_all, "CC_mut_noncodel"
+    df_CC_corrs_IDH_noncodel, IDH_noncodel_peri, "CC_mut_noncodel", output_dir
 )
 
 # %%
@@ -799,8 +897,8 @@ df_CC_corrs_offset_mut_noncodel = make_corrs_offset_corr(
 ########################
 # WHOLE GROUP PATIENTS ANALYSIS: Non-tumoral areas
 ########################
-df_EC_corrs_offset = make_corrs_offset_corr(df_EC_corrs, df_peritumoral_all, "EC_3")
-df_CC_corrs_offset = make_corrs_offset_corr(df_CC_corrs, df_peritumoral_all, "CC_3")
+df_EC_corrs_offset = make_corrs_offset_corr(df_EC_corrs, df_peritumoral, "EC_3", output_dir)
+df_CC_corrs_offset = make_corrs_offset_corr(df_CC_corrs, df_peritumoral, "CC_3", output_dir)
 
 
 ########################
@@ -809,113 +907,84 @@ df_CC_corrs_offset = make_corrs_offset_corr(df_CC_corrs, df_peritumoral_all, "CC
 
 # --- IDH-wildtype --- #
 df_EC_corrs_offset_wt = make_corrs_offset_corr(
-    df_corrs_wt_rest_EC, IDH_wt_peritumoral_all, "EC_wt_3"
+    df_EC_corrs_IDH_wt, IDH_wt_peri, "EC_wt_3", output_dir
 )
 df_CC_corrs_offset_wt = make_corrs_offset_corr(
-    df_corrs_wt_rest_CC, IDH_wt_peritumoral_all, "CC_wt_3"
+    df_CC_corrs_IDH_wt, IDH_wt_peri, "CC_wt_3", output_dir
 )
 
 # --- IDH-mutant, 1p19q-codeleted --- #
 df_EC_corrs_offset_mut_codel = make_corrs_offset_corr(
-    df_corrs_codel_rest_EC, IDH_mut_codeleted_peritumoral_all, "EC_mut_codel_3"
+    df_EC_corrs_IDH_codel, IDH_codel_peri, "EC_codel_3", output_dir
 )
 df_CC_corrs_offset_mut_codel = make_corrs_offset_corr(
-    df_corrs_codel_rest_CC, IDH_mut_codeleted_peritumoral_all, "CC_mut_codel_3"
+    df_CC_corrs_IDH_codel, IDH_codel_peri, "CC_codel_3", output_dir
 )
 
 # --- IDH mutant, 1p19q-noncoldeleted --- #
 df_EC_corrs_offset_mut_noncodel = make_corrs_offset_corr(
-    df_corrs_noncodel_rest_EC, IDH_mut_noncodeleted_peritumoral_all, "EC_mut_noncodel_3"
+    df_EC_corrs_IDH_noncodel, IDH_noncodel_peri, "EC_noncodel_3", output_dir
 )
 df_CC_corrs_offset_mut_noncodel = make_corrs_offset_corr(
-    df_corrs_noncodel_rest_CC, IDH_mut_noncodeleted_peritumoral_all, "CC_mut_noncodel_3"
+    df_CC_corrs_IDH_noncodel, IDH_noncodel_peri, "CC_noncodel_3", output_dir
 )
 
 
-# %%
+
+#%%
 
 ########################
-# SPINTEST PREPARATIONS
+# PREPARATION SPINTEST
 ########################
+def prepare_spintest(df, output_dir, name): 
+    """
+    Function to calculate the regional mean of the raw offset and network metrics.
+    These are stored in dataframes per frequency and density in goal directory. 
+    These Dataframes will be used in the Spin-test analysis.
 
-### Load in dataframes containing raw (non-standardized) data ###
-df_patients_raw = pd.read_pickle(
-    "/desired_folder_name/df_master_pat_no_distance_no_edema_z_and_raw.pkl"
-)
-df_patients_raw = df_patients_raw.loc[
-    :, ~df_patients_raw.columns.duplicated()
-]  # remove duplicate columns
-df_patients_raw.reset_index(inplace=True)
+    Parameters
+    ----------
+    df : pd.DataFrame,
+        Dataframe storing the raw offset and network data
+    output_dir : str,
+        path to directory where dataframes with regional means should be stored
+    name : str, 
+        used to describe which group was analysed (make output file name clear)
 
+    Returns
+    -------
+    None.
 
-########################
-# PATIENTS RAW DATAFRAMES
-########################
+    """
+    
+    #calculate the regional average
+    grouped_by_roi = df.groupby("roi").mean()  
+    
+    for freq in ["delta", "theta", "lower_alpha"]:
+        
+        for d in ["02", "03"]:
+            
+            # extract the needed columns per frequency and density and store in new dataframe
+            # first col is offset, second col is network metric
+            df_CC = grouped_by_roi[["Offset", f"CC_{freq}_{d}"]]
+            df_CC.to_csv(
+                f"{output_dir}df_CC_{freq}_{d}_spintest_{name}.csv",
+                header=False,
+                index=False,
+            ) 
+            
+            # extract the needed columns per frequency and density and store in new dataframe
+            # first col is offset, second col is network metric
+            
+            df_EC = grouped_by_roi[["Offset", f"EC_{freq}_{d}"]]
+            df_EC.to_csv(
+                f"{output_dir}df_EC_{freq}_{d}_spintest_{name}.csv",
+                header=False,
+                index=False,
+            )  
+            
+#%%
+output_dir = '/path/to/output/dir'
 
-# df only containing subjects with tumor mask (so tumors with overlap to brain regions >12%)
-df_patients_raw = df_patients_raw.loc[:, ~df_patients_raw.columns.duplicated()]
-subs_no_overlap = df_patients_raw.groupby("sub").sum()
-subs_no_overlap.reset_index(inplace=True)
-li_subs_no_overlap = subs_no_overlap.loc[subs_no_overlap["peritumor"] == 0, "sub"]
-df_master_only_overlaps = df_patients_raw.loc[
-    ~df_patients_raw["sub"].isin(li_subs_no_overlap)
-]
-
-# subjects that have tumor that reaches into both hemispheres (N = 11)
-subs_hom = np.unique(
-    df_master_only_overlaps.loc[
-        (df_master_only_overlaps["non_peritumoral_hom"] == 1)
-        & (df_master_only_overlaps["peritumor"] == 1),
-        "sub",
-    ]
-)
-
-# df containining subjects that do not have tumor that reaches to both hemispheres
-df_master_uni = df_master_only_overlaps.loc[
-    ~df_master_only_overlaps["sub"].isin(subs_hom)
-]
-
-
-# df containing only rest of the brain (non-tumoral data) filtered on subjects that are included in the study
-patients_included = sorted(df_non_tum["sub"].unique())
-df_non_tum_raw = df_master_only_overlaps.loc[df_master_only_overlaps["perc"] == 0]
-df_non_tum_raw = df_non_tum_raw.loc[
-    df_non_tum_raw["sub"].isin(patients_included)
-]  # only include patients that are included in the main analysis
-
-# %%
-########################
-# HCs RAW DATAFRAMES
-########################
-df_HC_raw = pd.read_pickle("/desired_folder_name/df_HC_master_z_and_raw.pkl")
-df_HC_raw = df_HC_raw.loc[:, ~df_HC_raw.columns.duplicated()]
-
-# %%
-########################
-# AVERGAE PER REGION
-########################
-
-# obtain one average per brain region over all subjects
-grouped_by_roi = df_non_tum_raw.groupby(
-    "roi"
-).mean()  # comment/uncomment depending on which group you want to average
-# grouped_by_roi = df_HC_raw.groupby('roi').mean()
-
-group = "patients_rest_non_tum"
-for freq in ["delta", "theta", "lower_alpha"]:
-    for d in ["2", "3"]:
-        # extract the network metric columnsper frequency and density and store in dataframe
-        df_CC = grouped_by_roi[["Offset", f"CC_{freq}_{d}"]]
-        df_CC.to_csv(
-            f"/desired_folder_name/df_CC_{freq}_{d}_{group}.csv",
-            header=False,
-            index=False,
-        )  # change name of file depending on which group you averaged for
-
-        # extract the network metric columnsper frequency and density and store in dataframe
-        df_EC = grouped_by_roi[["Offset", f"EC_{freq}_{d}"]]
-        df_EC.to_csv(
-            f"/desired_folder_name/df_EC_{freq}_{d}_{group}.csv",
-            header=False,
-            index=False,
-        )  # change name of file depending on which group you averaged for
+prepare_spintest(df_non_tum, output_dir, "patients_non_tum")
+prepare_spintest(df_HC, output_dir, "HCs")

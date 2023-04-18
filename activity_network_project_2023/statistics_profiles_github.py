@@ -27,18 +27,29 @@ __status__ = "Finished"
 # Standard imports  ###
 import glob
 from datetime import datetime
+import re
 
 # Third party imports ###
 import pandas as pd  # version 1.1.5
-import numpy as np  ## not used?
-import matplotlib.pyplot as plt
-import re
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-import scipy.stats as stats
-from scipy.stats import wilcoxon
-from scipy.stats import mannwhitneyu
-import seaborn as sns
+import matplotlib.pyplot as plt # version 3.6.2
+import statsmodels.api as sm # version 0.13.2
+import statsmodels.formula.api as smf # version 0.13.2
+import scipy.stats as stats # version 1.9.3
+from scipy.stats import wilcoxon # version 1.9.3
+from scipy.stats import mannwhitneyu # version 1.9.3
+import seaborn as sns # version 0.11.0
+#%%
+####################
+# DATAFRAME IMPORT #
+####################
+
+#PATIENTS
+
+#import correlation dataframes (patients non_tumoral)
+
+#[pd.read_csv...]
+#df_all, df_peritumoral, df_homologue, df_non_tum, df_HC, Subtype dataframes
+
 
 # %%
 ###################
@@ -80,28 +91,30 @@ def calc_area_vs_HC(df_pat, df_HC, metric, area, output_dir, activity=False):
     if activity == False:
         dict_stat = {}
 
-        for freq in ["theta", "delta", "alpha"]:
+        for freq in ["theta", "delta", "lower_alpha"]:
             print(freq)
             for d in ["02", "03"]:
                 print(d)
                 # average the network metrics per subject
-                avg_pat = df_pat.groupby("sub")[metric + "_z_" + freq + "_" + d].mean()
-                avg_HC = df_HC.groupby("sub")[metric + "_z_" + freq + "_" + d].mean()
+                avg_pat = df_pat.groupby("sub")[f"{metric}_{freq}_{d}_z"].mean()
+                avg_HC = df_HC.groupby("sub")[f"{metric}_{freq}_{d}_z"].mean()
 
                 # Mann-Whitney U test
                 stat, p = mannwhitneyu(avg_pat, avg_HC)
-                dict_stat[freq + "_" + d] = [stat, p]  # store results
+                dict_stat[f"{freq}_{d}"] = [stat, p]  # store results
+    
     # Activity comparisons
     else:
         dict_stat = {}
 
         # average the activity metric per subject
-        avg_pat = df_pat.groupby("sub")[metric + "_z"].mean()
-        avg_HC = df_HC.groupby("sub")[metric + "_z"].mean()
+        avg_pat = df_pat.groupby("sub")[f"{metric}_z"].mean()
+        avg_HC = df_HC.groupby("sub")[f"{metric}_z"].mean()
 
         # Mann-Whitney U test
         stat, p = mannwhitneyu(avg_pat, avg_HC)
         dict_stat[area] = [stat, p]  # store results
+    
     # store all results in dataframe
     df_stats = pd.DataFrame.from_dict(dict_stat, orient="index")
     # return(df_stats)
@@ -110,7 +123,7 @@ def calc_area_vs_HC(df_pat, df_HC, metric, area, output_dir, activity=False):
     df_stats.to_csv(
         output_dir
         + now.strftime("%Y%m%d")
-        + "_desired_file_name_"
+        + "_pat_vs_HC_"
         + metric
         + "_"
         + area
@@ -127,18 +140,18 @@ def calc_area_vs_HC(df_pat, df_HC, metric, area, output_dir, activity=False):
 # Comparison activity (offset_z)
 ######
 
-output_dir = "/path/to/output/folder/"
+output_dir = "/path/to/output_folder/"
 
 calc_area_vs_HC(
-    df_peritumoral, df_master_HC, "offset", "peritumor", output_dir, activity=True
+    df_peritumoral, df_HC, "offset", "peritumor", output_dir, activity=True
 )  # peritumoral area vs. whole brain HCs
 
 calc_area_vs_HC(
-    df_homologue, df_master_HC, "offset", "homologue", output_dir, activity=True
+    df_homologue, df_HC, "offset", "homologue", output_dir, activity=True
 )  # contralateral homologue vs. whole brain HCs
 
 calc_area_vs_HC(
-    df_non_tum, df_master_HC, "offset", "non_tum", output_dir, activity=True
+    df_non_tum, df_HC, "offset", "non_tum", output_dir, activity=True
 )  # rest of the brain (all non-tumoral areas) vs. wholebrain HCs
 
 # %%
@@ -146,24 +159,24 @@ calc_area_vs_HC(
 # Comparison network metrics (EC_z, CC_z)
 ######
 calc_area_vs_HC(
-    df_peritumoral, df_master_HC, "CC", "peritumor", output_dir, activity=False
+    df_peritumoral, df_HC, "CC", "peritumor", output_dir, activity=False
 )  # peritumoral area vs. whole brain HCs
 calc_area_vs_HC(
-    df_peritumoral, df_master_HC, "EC", "peritumor", output_dir, activity=False
+    df_peritumoral, df_HC, "EC", "peritumor", output_dir, activity=False
 )  # peritumoral area vs. whole brain HCs
 
 calc_area_vs_HC(
-    df_homologue, df_master_HC, "CC", "homologue", output_dir, activity=False
+    df_homologue, df_HC, "CC", "homologue", output_dir, activity=False
 )  # contralateral homologue vs. whole brain HCs
 calc_area_vs_HC(
-    df_homologue, df_master_HC, "EC", "homologue", output_dir, activity=False
+    df_homologue, df_HC, "EC", "homologue", output_dir, activity=False
 )  # contralateral homologue vs. whole brain HCs
 
 calc_area_vs_HC(
-    df_non_tum, df_master_HC, "CC", "non_tum", output_dir, activity=False
+    df_non_tum, df_HC, "CC", "non_tum", output_dir, activity=False
 )  # rest of the brain (all non-tumoral areas) vs. wholebrain HCs
 calc_area_vs_HC(
-    df_non_tum, df_master_HC, "EC", "non_tum", output_dir, activity=False
+    df_non_tum, df_HC, "EC", "non_tum", output_dir, activity=False
 )  # rest of the brain (all non-tumoral areas) vs. wholebrain HCs
 
 # %%
@@ -171,7 +184,8 @@ calc_area_vs_HC(
 # SUBTYPE ANALYSIS
 ########################
 
-# output_dir = '/path/to/output/folder'
+output_dir = '/path/to/output/folder'
+
 
 ######
 # Comparison activity (offset_z)
@@ -179,45 +193,45 @@ calc_area_vs_HC(
 
 # IDH wildtype
 calc_area_vs_HC(
-    IDH_wt_peritumoral_all,
-    df_master_HC,
+    IDH_wt_peri,
+    df_HC,
     "offset",
     "peritumor_IDH_wt",
     output_dir,
     activity=True,
 )
 calc_area_vs_HC(
-    IDH_wt_homologue,
-    df_master_HC,
+    IDH_wt_hom,
+    df_HC,
     "offset",
     "homologue_IDH_wt",
     output_dir,
     activity=True,
 )
 calc_area_vs_HC(
-    IDH_wt_rest, df_master_HC, "offset", "rest_IDH_wt", output_dir, activity=True
+    IDH_wt_non_tum, df_HC, "offset", "rest_IDH_wt", output_dir, activity=True
 )
 
 # IDH mutant codeleted
 calc_area_vs_HC(
-    IDH_mut_codeleted_peritumoral_all,
-    df_master_HC,
+    IDH_codel_peri,
+    df_HC,
     "offset",
     "peritumor_IDH_mut_codel",
     output_dir,
     activity=True,
 )
 calc_area_vs_HC(
-    IDH_mut_codeleted_homologue,
-    df_master_HC,
+    IDH_codel_hom,
+    df_HC,
     "offset",
     "homologue_IDH_mut_codel",
     output_dir,
     activity=True,
 )
 calc_area_vs_HC(
-    IDH_mut_codeleted_rest,
-    df_master_HC,
+    IDH_codel_non_tum,
+    df_HC,
     "offset",
     "rest_IDH_mut_codel",
     output_dir,
@@ -226,112 +240,61 @@ calc_area_vs_HC(
 
 # IDH mutant non-codeleted
 calc_area_vs_HC(
-    IDH_mut_noncodeleted_peritumoral_all,
-    df_master_HC,
+    IDH_noncodel_peri,
+    df_HC,
     "offset",
     "peritumor_IDH_mut_noncodel",
     output_dir,
     activity=True,
 )
 calc_area_vs_HC(
-    IDH_mut_noncodeleted_homologue,
-    df_master_HC,
+    IDH_noncodel_hom,
+    df_HC,
     "offset",
-    "homologue_mut_noncodel",
+    "homologue_IDH_mut_noncodel",
     output_dir,
     activity=True,
 )
 calc_area_vs_HC(
-    IDH_mut_noncodeleted_rest,
-    df_master_HC,
+    IDH_noncodel_non_tum,
+    df_HC,
     "offset",
     "rest_IDH_mut_noncodel",
     output_dir,
     activity=True,
 )
 
-
+#%%
 ######
 # Comparison network metrics (EC_z, CC_z)
 ######
 
-# IDH wildtype
-calc_area_vs_HC(
-    IDH_wt_peritumoral_all,
-    df_master_HC,
-    "EC",
-    "peritumor_IDH_wt",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_wt_homologue, df_master_HC, "EC", "homologue_IDH_wt", output_dir, activity=False
-)
-calc_area_vs_HC(
-    IDH_wt_rest, df_master_HC, "EC", "rest_IDH_wt", output_dir, activity=False
-)
+#IDH wildtype
+
 
 calc_area_vs_HC(
-    IDH_wt_peritumoral_all,
-    df_master_HC,
-    "CC",
-    "peritumor_IDH_wt",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_wt_homologue, df_master_HC, "CC", "homologue_IDH_wt", output_dir, activity=False
-)
-calc_area_vs_HC(
-    IDH_wt_rest, df_master_HC, "CC", "rest_IDH_wt", output_dir, activity=False
+    IDH_wt_non_tum, df_HC, "EC", "rest_IDH_wt", output_dir, activity=False
 )
 
+
+calc_area_vs_HC(
+    IDH_wt_non_tum, df_HC, "CC", "rest_IDH_wt", output_dir, activity=False
+)
 
 # IDH mutant codeleted
 calc_area_vs_HC(
-    IDH_mut_codeleted_peritumoral_all,
-    df_master_HC,
-    "EC",
-    "peritumor_IDH_mut_codel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_codeleted_homologue,
-    df_master_HC,
-    "EC",
-    "homologue_IDH_mut_codel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_codeleted_rest,
-    df_master_HC,
+    IDH_codel_non_tum,
+    df_HC,
     "EC",
     "rest_IDH_mut_codel",
     output_dir,
     activity=False,
 )
 
+
 calc_area_vs_HC(
-    IDH_mut_codeleted_peritumoral_all,
-    df_master_HC,
-    "CC",
-    "peritumor_IDH_mut_codel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_codeleted_homologue,
-    df_master_HC,
-    "CC",
-    "homologue_IDH_mut_codel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_codeleted_rest,
-    df_master_HC,
+    IDH_codel_non_tum,
+    df_HC,
     "CC",
     "rest_IDH_mut_codel",
     output_dir,
@@ -340,25 +303,10 @@ calc_area_vs_HC(
 
 
 # IDH mutant non-codeleted
+
 calc_area_vs_HC(
-    IDH_mut_noncodeleted_peritumoral_all,
-    df_master_HC,
-    "EC",
-    "peritumor_IDH_mut_noncodel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_noncodeleted_homologue,
-    df_master_HC,
-    "EC",
-    "homologue_mut_noncodel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_noncodeleted_rest,
-    df_master_HC,
+    IDH_noncodel_non_tum,
+    df_HC,
     "EC",
     "rest_IDH_mut_noncodel",
     output_dir,
@@ -366,24 +314,8 @@ calc_area_vs_HC(
 )
 
 calc_area_vs_HC(
-    IDH_mut_noncodeleted_peritumoral_all,
-    df_master_HC,
-    "CC",
-    "peritumor_IDH_mut_noncodel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_noncodeleted_homologue,
-    df_master_HC,
-    "CC",
-    "homologue_mut_noncodel",
-    output_dir,
-    activity=False,
-)
-calc_area_vs_HC(
-    IDH_mut_noncodeleted_rest,
-    df_master_HC,
+    IDH_noncodel_non_tum,
+    df_HC,
     "CC",
     "rest_IDH_mut_noncodel",
     output_dir,
@@ -398,7 +330,7 @@ calc_area_vs_HC(
 
 def calc_peri_vs_hom(
     df_pat_peri, df_pat_hom, metric, output_dir, name, activity=False
-):  # df_pat, metric, output_dir, activity = False): #changed for analysis with subtypes
+):  
     """
     Function to statistically test the difference between a network or activity
     metric in the peritumoral and peritumoral homologue area (averaged over these areas).
@@ -428,17 +360,17 @@ def calc_peri_vs_hom(
     now = datetime.now()
     dict_stat = {}
     if activity == False:
-        for freq in ["theta", "delta", "alpha"]:
+        for freq in ["theta", "delta", "lower_alpha"]:
             print(freq)
             for d in ["02", "03"]:
                 print(d)
 
                 # average the network metric per subject
                 avg_peritumoral = df_pat_peri.groupby("sub")[
-                    f"{metric}_z_{freq}_{d}"
+                    f"{metric}_{freq}_{d}_z"
                 ].mean()
                 avg_homologue = df_pat_hom.groupby("sub")[
-                    f"{metric}_z_{freq}_{d}"
+                    f"{metric}_{freq}_{d}_z"
                 ].mean()
 
                 # Wilcoxon-signed rank test
@@ -465,7 +397,7 @@ def calc_peri_vs_hom(
     df_stats.to_csv(
         output_dir
         + now.strftime("%Y%m%d")
-        + "_desired_file_name_"
+        + "_peri_vs_hom_"
         + name
         + metric
         + ".csv"
@@ -473,7 +405,7 @@ def calc_peri_vs_hom(
 
 
 # %%
-output_dir = "/path/to/output/folder/"
+output_dir = "/path/to/output_folder/"
 
 # %%
 
@@ -499,17 +431,17 @@ calc_peri_vs_hom(df_peritumoral, df_homologue, "offset", output_dir, "_", activi
 # Comparison activity (offset_z) between peritumoral area and homologue for the different tumor subtypes
 ######
 
-# output_dir = 'path/to/output/folder/'
+output_dir = 'path/to/output/folder/'
 
 # IDH wt
 calc_peri_vs_hom(
-    IDH_wt_peritumoral, IDH_wt_homologue, "offset", output_dir, "IDH_wt_", activity=True
+    IDH_wt_peri, IDH_wt_hom, "offset", output_dir, "IDH_wt_", activity=True
 )
 
 # IDH mutant codeleted
 calc_peri_vs_hom(
-    IDH_mut_codeleted_peritumoral,
-    IDH_mut_codeleted_homologue,
+    IDH_codel_peri,
+    IDH_codel_hom,
     "offset",
     output_dir,
     "IDH_mut_codeleted_",
@@ -518,8 +450,8 @@ calc_peri_vs_hom(
 
 # IDH mutant non-codeleted
 calc_peri_vs_hom(
-    IDH_mut_noncodeleted_peritumoral,
-    IDH_mut_noncodeleted_homologue,
+    IDH_noncodel_peri,
+    IDH_noncodel_hom,
     "offset",
     output_dir,
     "IDH_mut_noncodeleted_",
@@ -527,40 +459,72 @@ calc_peri_vs_hom(
 )
 
 
-# %%
+#%%
+
 ########################
-# FDR CORRECTION
+# MEANS AND STDs 
 ########################
 
-# Peritumor vs. Homologue
-import glob
-import statsmodels.stats.multitest
+def get_means_std(df_orig, output_dir, name):
+    """
+    Function to get the descriptive stats for every column in the dataframes. 
+    These are stored in a pd.DataFrame and saved in the desired directory.
+
+    Parameters
+    ----------
+    df_orig : pd.DataFrame,
+        dataframe for which descriptives should be calculated
+    output_dir : str,
+        path to directory where descriptives pd.DataFrames should be stored
+    name : str,
+        name for the file to identify which df was analysed
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    descriptives = df_orig.describe()
+    
+    descriptives.to_csv(f"{output_dir}{name}_descriptives.csv")
+    
+
+#%%
+
+output_dir = "/path/to/output_folder/"
+
+########################
+# Main dataframes
+########################
+
+get_means_std(df_peritumoral, output_dir, "df_peri")
+get_means_std(df_homologue, output_dir, "df_hom")
+get_means_std(df_non_tum, output_dir, "df_non_tum")
+get_means_std(df_HC, output_dir, "df_HC")
+
+########################
+# Patients subtypes
+########################
+
+#IDH-mut codeleted
+get_means_std(IDH_codel_peri, output_dir, "df_IDH_codel_peri")
+get_means_std(IDH_codel_hom, output_dir, "df_IDH_codel_hom")
+get_means_std(IDH_codel_non_tum, output_dir, "df_IDH_codel_non_tum")
+
+#IDH-mut noncodel
+get_means_std(IDH_noncodel_peri, output_dir, "df_IDH_noncodel_peri")
+get_means_std(IDH_noncodel_hom, output_dir, "df_IDH_noncodel_hom")
+get_means_std(IDH_noncodel_non_tum, output_dir, "df_IDH_noncodel_non_tum")
+
+#IDH-wt
+get_means_std(IDH_wt_peri, output_dir, "df_IDH_wt_peri")
+get_means_std(IDH_wt_hom, output_dir, "df_IDH_wt_hom")
+get_means_std(IDH_wt_non_tum, output_dir, "df_IDH_wt_non_tum")
 
 
-# files = glob.glob('/path/to/folder/results_to_correct/*')
-files = glob.glob("/path/to/folder/results_to_correct/*.csv")
 
-for file in files:
-    df = pd.read_csv(file, header=None)
-    df.columns = ["metric", "statistic", "p-value"]
 
-    # FDR corrected based on the column p-value
-    df["FDR_corrected"] = statsmodels.stats.multitest.fdrcorrection(df["p-value"])[1]
 
-    # FDR correction with only 2 densities
-    list_2_den = [
-        "delta_02",
-        "delta_03",
-        "theta_02",
-        "theta_03",
-        "alpha_02",
-        "alpha_03",
-    ]
-    df_2_den = df.loc[df["metric"].isin(list_2_den)]
-    df_2_den["FDR_corrected_only_2_den"] = statsmodels.stats.multitest.fdrcorrection(
-        df_2_den["p-value"]
-    )[1]
 
-    # put both corrections together in one dataframe
-    concatenated = pd.concat([df, df_2_den["FDR_corrected_only_2_den"]], axis=1)
-    concatenated.to_csv(file)
+
