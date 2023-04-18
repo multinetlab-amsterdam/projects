@@ -343,6 +343,8 @@ mixed_model_interactions(df_non_tum_all, "offset", output_dir,"non-tumoral")
 # FDR CORRECTION
 ########################
 
+#For all FDR corrections in this manuscript, we additionally used this website to check the corrections:https://tools.carbocation.com/FDR
+
 import glob
 import statsmodels.stats.multitest # not used?
 
@@ -629,6 +631,8 @@ df_EC_corr_against_0_noncodel.columns = ["t", "p"]
 ########################
 # FDR CORRECTION
 ########################
+
+
 
 output_dir = "path/to/output_folder/"
 
