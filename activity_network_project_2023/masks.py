@@ -30,9 +30,9 @@ from glob import glob
 from shutil import copy
 
 # Third party imports ###
-import numpy as np
+import numpy as np # version 1.23.5
 import pandas as pd  # version 1.1.5
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt #version 3.6.2
 
 
 # %%
