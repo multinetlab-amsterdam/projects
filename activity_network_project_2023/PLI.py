@@ -6,7 +6,7 @@ Scripts to construct functional networks using the PLI for the different frequen
 
 __author__ = "Mona Lilo Margarethe Zimmermann"
 __contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
-__date__ = "January 2022"
+__date__ = "February 2023"
 __status__ = "Finished"
 
 ####################
@@ -22,33 +22,21 @@ __status__ = "Finished"
 
 # Standard imports  ###
 import os
-import time # not used?
 from datetime import date
 
 
 # Third party imports ###
-import numpy as np
+import numpy as np # version 1.23.5
 import pandas as pd  # version 1.1.5
-from numpy import fft
-from scipy.signal import hilbert
-from scipy import fft # not used?
-import scipy # not used? 
-import statsmodels.api as sm # not used?
-from tqdm import tqdm
-import matplotlib.pyplot as plt # not used?
-import seaborn as sns # not used?
-import plotly.graph_objects as go # not used?
-from plotly.offline import plot as plot_off # not used?
-from scipy import signal
-from scipy.fft import fft, irfft2, ifft2, irfftn, irfft, ifft # not used?
-from scipy.fftpack import hilbert # not used?
-import matplotlib as mpl # not used?
+from numpy import fft # version 1.23.5
+from scipy.signal import hilbert # version 1.9.3
+from scipy import signal # version 1.9.3
 
 
 # Internal imports ###
-from alternative_Compute_broadband import find_paths
+from fooof_script import find_paths
 from fft_filt import fft_filt
-from make_csv import make_csv  # not used?
+
 
 
 # %%
@@ -73,7 +61,7 @@ def pli_matteo(filtered_timeseries):
 
     """
 
-    N = nch = filtered_timeseries.shape[1]  ###why double asignement?
+    N = nch = filtered_timeseries.shape[1]  
     m = np.zeros([N, N])
 
     complex_a = signal.hilbert(filtered_timeseries, axis=0)
@@ -138,8 +126,8 @@ def loop_PLI(subjects, freq_value, fs, nr_rois):
             sub_all_matrices = []
 
             for epoch_file, name in zip(range(len(files_list)), files_list):
-                print(epoch_file)
-                print(name)
+                
+                
 
                 # load in single epoch´s timseries
                 timeseries = pd.read_csv(
@@ -148,10 +136,11 @@ def loop_PLI(subjects, freq_value, fs, nr_rois):
 
                 # split the epoch in 4 pieces
                 timeseries_split = np.array_split(timeseries, 4)
-
-                for i in range(0, 3):  # why 3?
-                    # extract the epoch piece
-                    epoch_piece = timeseries_split[i]
+                
+                for i, epoch_piece in enumerate(timeseries_split):
+                    
+                    
+                
 
                     # filter timeseries of epoch piece into frequency band
                     filt_piece = fft_filt(
@@ -184,17 +173,16 @@ def loop_PLI(subjects, freq_value, fs, nr_rois):
 
 # dictionary of frequencies for which to construct the PLIs
 freq_dict = {
-    "BB": [0.5, 48],
     "delta": [0.5, 4],
     "theta": [4, 8],
     "lower_alpha": [8, 10],
 }
 
 
-subs_csv = "path/to/csv/file"
+subs_csv = "path/to/csv_file/where/subject_info/stored/for/make_csv_func.csv"
 
 
-for freq, freq_value in tqdm(freq_dict.items()):
+for freq, freq_value in freq_dict.items():
     print("This is frequency: ")
     print(freq)
 
@@ -207,7 +195,7 @@ for freq, freq_value in tqdm(freq_dict.items()):
 
     # 1. Create correctly your list of subjects you want to process
     # an example is given here: 'example_MEG_list.csv'
-    subject_list = subs_csv ## why duplicate?
+    subject_list = subs_csv
 
     # 2. Define the type of file extension your are looking for
     extension = ".asc"  # extension type
@@ -227,7 +215,9 @@ for freq, freq_value in tqdm(freq_dict.items()):
     freq_range = freq_value  # frequency range you want to analyze
 
     # 6. Give output directory
-    dir_output_pli = "/path/to/store/output"
+    #dir_output_pli = f"/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_network_activity/03_analysis/01_output_prep/02_PLIs/01_patients/{freq}/"
+    #dir_output_pli = f"/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_network_activity/03_analysis/01_output_prep/02_PLIs/02_HCs/{freq}/"
+    dir_output_pli = f"path/to/folder/where/PLIs/should/be/{freq}/stored.csv"
 
     # 7. Do you want to see the plots?
     # plot_choice = True
@@ -240,7 +230,7 @@ for freq, freq_value in tqdm(freq_dict.items()):
     ###########################
 
     # output filtered timeseries?
-    all_pli_matrices = loop_PLI(subject_list, freq_value, Fs, nr_rois)
+    all_pli_matrices = loop_PLI(subject_list, freq_range, Fs, nr_rois)
 
     # save output
     if save_output == True:
@@ -268,8 +258,9 @@ for freq, freq_value in tqdm(freq_dict.items()):
                     + "_"
                     + str(date.today().strftime("%Y%m%d"))
                     + "_"
-                    + "pli"
-                    + ".csv",
+                    + "pli_"
+                    + freq
+                    + "_.csv",
                     header=True,
                     index=False,
                 )
