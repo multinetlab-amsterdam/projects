@@ -1,7 +1,7 @@
 ## The relationship between pathological brain activity and functional network connectivity in glioma patients
 ### Mona LM Zimmermann, Lucas C Breedt, Eduarda GZ Centeno, Jaap C Reijneveld, Fernando AN Santos, Cornelis J Stam, Marike R van Lingen, Menno M Schoonheim, Arjan Hillebrand, Linda Douw
 
-Scripts used in [paper link] 
+Scripts used in [this preprint](https://www.medrxiv.org/content/10.1101/2023.04.20.23288814v1.full.pdf).
 
 <br>
 
