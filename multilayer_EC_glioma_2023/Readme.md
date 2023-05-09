@@ -19,8 +19,8 @@ Scripts:
     4. Brain Connectivity Toolbox --> https://www.nitrc.org/frs/?group_id=241 version 2019/03/03
     
   
-  2. newest_multilayer_main_code.py --> to calculate multilayer eigenvector centrality in the frontoparietal network, using the supra adjacency matrix output file   	from the supra_adjacencymatrix_github.m script as input file. 
-  See the original main multilayer script here: https://github.com/multinetlab-amsterdam/data_analysis/tree/Multilayer/Multilayer
+  2. adjusted_multilayer_main_code.py --> to calculate multilayer eigenvector centrality in the frontoparietal network, using the supra adjacency matrix output file   	from the supra_adjacencymatrix_github.m script as input file. 
+  See the original main multilayer script that was used as a basis: https://github.com/multinetlab-amsterdam/data_analysis/tree/Multilayer/Multilayer
   We set the amount of layers to n = 6 (for each frequency band) and selected the 12 regions from the frontoparietal network as based on the AAL atlas and use the **group_eigenvector_centrality** function:
   
  _function_output(group_eigenvector_centrality, supra_mst,'/mnt/resource/m.vanlingen/m2b/matlab_output_final_okt2021/whole_multilayer_EC', 'EC', list(range(6)))_
