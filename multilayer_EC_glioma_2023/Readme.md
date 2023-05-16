@@ -31,11 +31,13 @@ There were two main scripts used for this project:
     just_tags	=['pli_delta', 'pli_theta', 'pli_alpha1', 'pli_alpha2', 'pli_beta', 'pli_gamma'] 
     plot_tags	=['PLI delta', 'PLI theta', 'PLI alpha1', 'PLI alpha2', 'PLI beta', 'PLI gamma'] 
 
-  2) Under header 'OTHER FUNCTIONS' set sub network (FPN in this case)
-  sub_net=[5,6,7,16,17,36,44,45,46,55,56,75]  (number represent FPN regions based on AAL atlas minus 1 since python starts at 0)
+  2) Under header 'OTHER FUNCTIONS' set sub network (FPN in this case):
+
+    sub_net=[5,6,7,16,17,36,44,45,46,55,56,75]  (number represent FPN regions based on AAL atlas minus 1 since python starts at 0)
   
   3) At the very end of the script, define the function_output:
- _function_output(group_eigenvector_centrality, supra_mst,'/mnt/resource/m.vanlingen/m2b/matlab_output_final_okt2021/whole_multilayer_EC', 'EC', list(range(6)))_
+    
+    function_output(group_eigenvector_centrality, supra_mst,'/mnt/resource/m.vanlingen/m2b/matlab_output_final_okt2021/whole_multilayer_EC', 'EC', list(range(6)))
    
 Statistics:
   The final output from the two abovementioned scripts was one average multilayer eigenvector centrality frontoparietal value per subject per timepoint.
