@@ -23,12 +23,13 @@ There were two main scripts used for this project:
   We 1) set the initial settings, i.e. amount of layers to n = 6 (for each frequency band) and 2) selected the 12 regions from the frontoparietal network as based on the AAL atlas and 3) use the **group_eigenvector_centrality** function:
   
   1) Under headers 'SETTINGS' and 'CREATING LAYER TAGS':
-  layer_size 	= 78 (AAL has 78 regions, so 78 nodes per layer)
-  weighted	= False (because we used the MST matrices that are unweighted and set to either 0 or 1)
-  filename	= 'supra_mst_full.mat' (output file from supra_adjacencymatrix_github.m script)
-  layer_tags	=['0 = pli delta, 1 = pli theta, 2 = pli alpha1, 3 = pli alpha2, 4 = pli beta, 5 = pli gamma']
-  just_tags	=['pli_delta', 'pli_theta', 'pli_alpha1', 'pli_alpha2', 'pli_beta', 'pli_gamma'] 
-  plot_tags	=['PLI delta', 'PLI theta', 'PLI alpha1', 'PLI alpha2', 'PLI beta', 'PLI gamma'] 
+  
+    layer_size 	= 78 (AAL has 78 regions, so 78 nodes per layer)
+    weighted	= False (because we used the MST matrices that are unweighted and set to either 0 or 1)
+    filename	= 'supra_mst_full.mat' (output file from supra_adjacencymatrix_github.m script)
+    layer_tags	=['0 = pli delta, 1 = pli theta, 2 = pli alpha1, 3 = pli alpha2, 4 = pli beta, 5 = pli gamma']
+    just_tags	=['pli_delta', 'pli_theta', 'pli_alpha1', 'pli_alpha2', 'pli_beta', 'pli_gamma'] 
+    plot_tags	=['PLI delta', 'PLI theta', 'PLI alpha1', 'PLI alpha2', 'PLI beta', 'PLI gamma'] 
 
   2) Under header 'OTHER FUNCTIONS' set sub network (FPN in this case)
   sub_net=[5,6,7,16,17,36,44,45,46,55,56,75]  (number represent FPN regions based on AAL atlas minus 1 since python starts at 0)
