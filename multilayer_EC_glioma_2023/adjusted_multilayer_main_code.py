@@ -103,7 +103,7 @@ print(layer_dic)
 # Every function defined from now on uses these data as input
 
 # ATTENTION: THIS IS THE OBJECT THAT WILL BE USED FOR THE REMAINDER OF THE CODE!
-supra_mst = scipy.io.loadmat('/mnt/resource/m.vanlingen/m2b/matlab_output_final_okt2021/supra_mst_full.mat')
+supra_mst = scipy.io.loadmat('/path/to/folder/supra_mst_full.mat')
 
 ### IMPROVEMENT - INCLUDE VERBOSE FUNCTION TO MAKE CHECKS IN THE CODE
 
@@ -851,4 +851,4 @@ def function_output(function, data, filename, colname, layers, N=layer_size):
     return
 
 #you need a correct matrix first (not only zeros)
-    function_output(group_eigenvector_centrality, supra_mst,'/mnt/resource/m.vanlingen/m2b/matlab_output_final_okt2021/whole_multilayer_EC', 'EC', list(range(6)))
+    function_output(group_eigenvector_centrality, supra_mst,'/path/to/folder/whole_multilayer_EC', 'EC', list(range(6)))
