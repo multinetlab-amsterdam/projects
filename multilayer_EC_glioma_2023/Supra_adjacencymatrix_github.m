@@ -25,14 +25,14 @@
 %%% Other m-files required:
 % other m-files that are necessary to run the script, i.e. all functions etc.
  
-% /data/KNW/m.vanlingen/m2b_manuscript/fft_filt_BNA.m
-% /data/KNW/m.vanlingen/m2b_manuscript/kruskal_algorithm.m
-% /data/KNW/m.vanlingen/m2b_manuscript/pli_matteo.m
+% fft_filt_BNA.m
+% kruskal_algorithm.m
+% pli_matteo.m
 
 %%% Toolboxes 
 % Brain Connectivity Toolbox (BCT, v2019-03-03; https://www.nitrc.org/frs/?group_id=241)
 
-% /data/KNW/m.vanlingen/m2b_manuscript/2019_03_03_BCT
+% 2019_03_03_BCT
 
 
 %% PART 1: CALCULATING CONNECTIVITY
