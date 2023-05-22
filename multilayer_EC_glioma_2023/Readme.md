@@ -1,7 +1,5 @@
-## The longitudinal relation between executive functioning and multilayer network topology in glioma patients
+## [The longitudinal relation between executive functioning and multilayer network topology in glioma patients](https://pubmed.ncbi.nlm.nih.gov/37067658/)
 ### Marike R van Lingen, Lucas C Breedt, Jeroen J G Geurts, Arjan Hillebrand, Martin Klein, Mathilde C M Kouwenhoven, Shanna D Kulik, Jaap C Reijneveld, Cornelis J Stam, Philip C De Witt Hamer, Mona L M Zimmermann, Fernando A N Santos, Linda Douw
-
-Scripts used in doi: 10.1007/s11682-023-00770-w.
 
 <br>
 
@@ -15,11 +13,11 @@ There were two main scripts used for this project:
     1. fft_filt_BNA.m      --> to filter the MEG signal into six frequencies 
     2. pli_matteo.m        --> to construct the functional network adjacency matrix based on the phase lag index (PLI)
     3. kruskal_algorithm.m --> to construct the minimum spanning tree (MST)
-    4. Brain Connectivity Toolbox --> https://www.nitrc.org/frs/?group_id=241 version 2019/03/03
+    4. [Brain Connectivity Toolbox](https://www.nitrc.org/frs/?group_id=241) -->  version 2019/03/03
     
   
   2. **adjusted_multilayer_main_code.py** --> to calculate multilayer eigenvector centrality in the frontoparietal network, using the supra adjacency matrix output file   	from the supra_adjacencymatrix_github.m script as input file. 
-  See the original main multilayer script that was used as a basis: https://github.com/multinetlab-amsterdam/data_analysis/tree/Multilayer/Multilayer
+  See the original [main multilayer script](https://github.com/multinetlab-amsterdam/data_analysis/tree/Multilayer/Multilayer) that was used as a basis: 
   We 1) set the initial settings, i.e. amount of layers to n = 6 (for each frequency band) and 2) selected the 12 regions from the frontoparietal network as based on the AAL atlas and 3) use the **group_eigenvector_centrality** function:
   
   1) Under headers 'SETTINGS' and 'CREATING LAYER TAGS':
@@ -37,7 +35,7 @@ There were two main scripts used for this project:
   
   3) At the very end of the script, define the function_output:
     
-    function_output(group_eigenvector_centrality, supra_mst,'/mnt/resource/m.vanlingen/m2b/matlab_output_final_okt2021/whole_multilayer_EC', 'EC', list(range(6)))
+    function_output(group_eigenvector_centrality, supra_mst,'/path/to/whole_multilayer_EC', 'EC', list(range(6)))
    
 Statistics:
   The final output from the two abovementioned scripts was one average multilayer eigenvector centrality frontoparietal value per subject per timepoint.
