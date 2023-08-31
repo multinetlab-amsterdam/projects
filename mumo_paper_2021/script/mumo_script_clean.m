@@ -1,17 +1,17 @@
 %% mumo_script_clean_v1
 
 %   This script is used to convert pre-processed neuroimaging data from 
-%   different modalities (dMRI, fMRI, MEG) into connectivity matrices, and 
+%   different modalities (dMRI, fMRI, MEG) into connectivity matrices and 
 %   to perform monolayer network analyses on and construct supra-adjacency 
 %   matrices for multilayer analyses from these matrices. See the readme on 
-%   github for a brief explanation on its use.
+%   GitHub for a brief explanation of its use.
 
 %%%
 
 %%author__ = LC Breedt
 %%contact__ = l.breedt@amsterdamumc.nl
 %%date__ = 2020/05/14
-%%status__ = Production
+%%status__ = Finished
 
 
 %%%%%%%%%%%%%%%%%%%%
