@@ -34,7 +34,7 @@ from scipy import signal # version 1.9.3
 
 
 # Internal imports ###
-from fooof_script import find_paths
+from alternative_Compute_broadband import find_paths  # Available at: https://github.com/multinetlab-amsterdam/data_analysis/blob/master/fooof/alternative_Compute_broadband.py
 from fft_filt import fft_filt
 
 
