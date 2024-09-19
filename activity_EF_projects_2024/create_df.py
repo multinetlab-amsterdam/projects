@@ -214,7 +214,7 @@ left_FPN = [17, 19, 21, 29, 31, 99, 137, 147, 177]
 right_FPN = [16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 100, 138, 142]
 
 #%%
-#load in standardized dataframes from baseline and FU
+#load in standardized dataframes from baseline and FU, standardization was done based on standardization script from the network_activity_project_2023
 df_patients_baseline_std = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_baseline.csv")
 df_patients_baseline_std.reset_index(drop = True, inplace = True)
 
