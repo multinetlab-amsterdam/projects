@@ -1,4 +1,4 @@
-This is the codebase belongs to the project: "The relationship between deviant brain activity and executive functioning in glioma patients"
+This is the codebase belonging to the project: "The relationship between deviant brain activity and executive functioning in glioma patients"
 
 The following scripts are provided: 
 
