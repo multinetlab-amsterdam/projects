@@ -38,7 +38,7 @@ import pyreadstat
 
 #Load in all subjects that included in the sudy (N = 37), including bilateral tumors 
 
-li_subs = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/01_subjects/all_subs_list.csv")
+li_subs = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/01_subjects/all_subs_list.csv")
 
 #%%
 
@@ -150,7 +150,7 @@ def calc_perc_overlap(all_subs, path, name_overlap_file,name_volume_file, area):
 
 #%%
 all_subs = li_subs
-path = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/02_tumormasks/"
+path = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/02_tumormasks/"
 name_overlap_file = "bna_gm_TumorOverlapVolume.txt"
 name_volume_file = "bna_gm_RoiVolumes.txt"
 area = "tumor" 
@@ -160,7 +160,7 @@ df_tumor_overlaps = calc_perc_overlap(all_subs, path, name_overlap_file,name_vol
 
 #%%
 all_subs = li_subs
-path = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/02_tumormasks/"
+path = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/02_tumormasks/"
 name_overlap_file = "bna_gm_TumorOverlapVolume_dialated_2.txt"
 name_volume_file = "bna_gm_RoiVolumes_dialated_2.txt"
 area = "peritumor" 
@@ -170,7 +170,7 @@ df_peri_overlaps = calc_perc_overlap(all_subs, path, name_overlap_file,name_volu
 #%%
 #resection cavity
 all_subs = li_subs
-path = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/06_resectieholtes/"
+path = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/06_resectieholtes/"
 name_overlap_file = "bna_gm_surrounding_cavity_OverlapVolume.txt"
 name_volume_file = "bna_gm_RoiVolumes.txt"
 area = "cavity" 
@@ -181,7 +181,7 @@ df_cavity_overlaps = calc_perc_overlap(all_subs, path, name_overlap_file,name_vo
 #enhancing tumor
 all_subs = li_subs
 all_subs_enhancing_tumor = all_subs.loc[all_subs["Case_ID"].isin(["sub-0017", "sub-0029", "sub-0054", "sub-0086", "sub-0099", "sub-9032"])]
-path = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/06_resectieholtes/"
+path = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/06_resectieholtes/"
 name_overlap_file = "bna_gm_surrounding_enhancingtumor_OverlapVolume.txt"
 name_volume_file = "bna_gm_RoiVolumes.txt"
 area = "enhancing_tumor" 
@@ -215,11 +215,11 @@ right_FPN = [16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 100, 138, 142]
 
 #%%
 #load in standardized dataframes from baseline and FU, standardization was done based on standardization script from the network_activity_project_2023
-df_patients_baseline_std = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_baseline.csv")
+df_patients_baseline_std = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_baseline.csv")
 df_patients_baseline_std.reset_index(drop = True, inplace = True)
 
 
-df_patients_FU_std = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_FU.csv")
+df_patients_FU_std = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_FU.csv")
 df_patients_FU_std.reset_index(drop = True, inplace = True)
 
 #%%
@@ -313,16 +313,16 @@ def make_lateralized_df(df_activity, df_overlaps, area):
 df_concat_ipsi, df_ipsi, df_ipsi_pure, df_overlaps_filt = make_lateralized_df(df_patients_baseline_std, df_peri_overlaps, "ipsilateral")
 df_concat_contra, df_contra, df_contra_pure, df_overlaps_filt_contra = make_lateralized_df(df_patients_baseline_std, df_peri_overlaps, "contralateral")
 
-#df_ipsi_pure.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_ipsilateral_excl_peritumoral.csv")
-#df_contra_pure.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_contralateral_excl_peritumoral.csv")
+#df_ipsi_pure.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_ipsilateral_excl_peritumoral.csv")
+#df_contra_pure.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_contralateral_excl_peritumoral.csv")
 
 #%%
 #1-YEAR FU
 df_concat_FU, df_ipsi_FU, df_ipsi_pure_FU, _ = make_lateralized_df(df_patients_FU_std, df_peri_overlaps, "ipsilateral")
 df_concat_FU, df_contra_FU, df_contra_pure_FU, _ = make_lateralized_df(df_patients_FU_std, df_peri_overlaps, "contralateral")
 
-#df_ipsi_pure_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_ipsilateral_excl_peritumoral.csv")
-#df_contra_pure_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_contralateral_excl_peritumoral.csv")
+#df_ipsi_pure_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_ipsilateral_excl_peritumoral.csv")
+#df_contra_pure_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_contralateral_excl_peritumoral.csv")
 
 
 #%%
@@ -331,16 +331,16 @@ df_concat_FU, df_contra_FU, df_contra_pure_FU, _ = make_lateralized_df(df_patien
 df_ipsi_averaged = df_ipsi_pure.groupby("sub", as_index=False).mean(numeric_only = True)
 df_contra_averaged = df_contra_pure.groupby("sub", as_index=False).mean(numeric_only = True)
 
-#df_ipsi_averaged.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_ipsilateral_excl_peritumoral_averaged.csv")
-#df_contra_averaged.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_contralateral_excl_peritumoral_averaged.csv")
+#df_ipsi_averaged.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_ipsilateral_excl_peritumoral_averaged.csv")
+#df_contra_averaged.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_contralateral_excl_peritumoral_averaged.csv")
 
 #%%
 #FU
 df_ipsi_averaged_FU = df_ipsi_pure_FU.groupby("sub").mean(numeric_only = True)
 df_contra_averaged_FU = df_contra_pure_FU.groupby("sub").mean(numeric_only = True) 
 
-#df_ipsi_averaged_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_ipsilateral_excl_peritumoral_averaged.csv")
-#df_contra_averaged_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_contralateral_excl_peritumoral_averaged.csv")
+#df_ipsi_averaged_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_ipsilateral_excl_peritumoral_averaged.csv")
+#df_contra_averaged_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_contralateral_excl_peritumoral_averaged.csv")
 
 
 #%%
@@ -389,49 +389,49 @@ def make_area_df(df_activity, df_overlaps):
 
 #%%
 #load in standardized dataframes from baseline and FU
-df_patients_baseline_std = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_baseline.csv")
+df_patients_baseline_std = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_baseline.csv")
 df_patients_baseline_std.reset_index(drop = True, inplace = True)
 
 
-df_patients_FU_std = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_FU.csv")
+df_patients_FU_std = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_patients_FU.csv")
 df_patients_FU_std.reset_index(drop = True, inplace = True)
 
 #%%
 ### PERITUMORAL DATAFRAME ###
 #BASELINE
 df_peri = make_area_df(df_patients_baseline_std, df_peri_overlaps)#sub-0088 does not have any overlap with region that overlaps 12% or more (i.e. N = 36)
-#df_peri.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_peritumoral.csv")
+#df_peri.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_peritumoral.csv")
 
 #FU 
 df_peri_FU = make_area_df(df_patients_FU_std, df_peri_overlaps)#sub-0088 does not have any overlap with region that overlaps 12% or more (i.e. N = 36)
-#df_peri_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_peritumoral.csv")
+#df_peri_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_peritumoral.csv")
 
 #%%
 #average for every subject over the rois
 #BASELINE
 df_peri_averaged = df_peri.groupby("sub", as_index=False).mean(numeric_only = True)
-#df_peri_averaged.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_peritumoral_averaged.csv")
+#df_peri_averaged.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_baseline_peritumoral_averaged.csv")
 
 #FU
 df_peri_FU_averaged = df_peri_FU.groupby("sub", as_index=False).mean(numeric_only = True)
-#df_peri_FU_averaged.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_peritumoral_averaged.csv")
+#df_peri_FU_averaged.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20232006_dataframe_FU_peritumoral_averaged.csv")
 
 
 #%% 
 ### Create delta dataframes, for longitudinal change analysis ### 
 
 df_peri_combined = pd.merge(df_peri_averaged, df_peri_FU_averaged, on='sub', suffixes=('_T1', '_T2'))
-#df_peri_combined.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_peritumoral_averaged_baseline_FU_combined.csv")
+#df_peri_combined.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_peritumoral_averaged_baseline_FU_combined.csv")
 
 #%%
 #still check that same results as used different way to merge df before apparently! instead of on sub and roi
 df_ipsi_combined = pd.merge(df_ipsi_averaged, df_ipsi_averaged_FU, on='sub', suffixes=('_T1', '_T2'))
-#df_ipsi_combined.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_ipsilateral_averaged_baseline_FU_combined.csv")
+#df_ipsi_combined.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_ipsilateral_averaged_baseline_FU_combined.csv")
 
 #%%%
 #still check that same results as used different way to merge df before apparently! instead of on sub and roi
 df_contra_combined = pd.merge(df_contra_averaged, df_contra_averaged_FU, on='sub', suffixes=('_T1', '_T2'))
-#df_contra_combined.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_contralateral_averaged_baseline_FU_combined.csv")
+#df_contra_combined.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_contralateral_averaged_baseline_FU_combined.csv")
 
 #%%
 ### CAVITY DATAFRAMES ###
@@ -440,56 +440,56 @@ df_contra_combined = pd.merge(df_contra_averaged, df_contra_averaged_FU, on='sub
 df_cavity = make_area_df(df_patients_baseline_std, df_cavity_overlaps)
 
 #%%
-df_cavity_check = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_cavity.csv")
+df_cavity_check = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_cavity.csv")
 
 #%%
 # remove sub-0054 from resection cavity overlaps as will only include them in enhancing tumor (has an enhancing tumor rim)
 df_cavity = df_cavity[df_cavity["sub"]!= "sub-0054"]
-#df_cavity.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_cavity.csv")
+#df_cavity.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_cavity.csv")
 #%%
 #FU
 df_cavity_FU = make_area_df(df_patients_FU_std, df_cavity_overlaps)
 
 # remove sub-0054 from resection cavity overlaps as will only include them in enhancing tumor (has an enhancing tumor rim)
 df_cavity_FU = df_cavity_FU[df_cavity_FU["sub"]!= "sub-0054"]
-#df_cavity_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_cavity.csv")
+#df_cavity_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_cavity.csv")
 
 #%%
 #Average for every subject over the rois to get one value per subject
 df_cavity_avg = df_cavity.groupby("sub", as_index=False).mean(numeric_only = True)
-#df_cavity_avg.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_cavity_averaged.csv")
+#df_cavity_avg.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_cavity_averaged.csv")
 
 df_cavity_FU_avg = df_cavity_FU.groupby("sub", as_index=False).mean(numeric_only = True)
-#df_cavity_FU_avg.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_cavity_averaged.csv")
+#df_cavity_FU_avg.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_cavity_averaged.csv")
 
 #%%
 #create delta df 
 df_cavity_combined = pd.merge(df_cavity_avg, df_cavity_FU_avg, on="sub", suffixes = ('_T1', '_T2'))
-#df_cavity_combined.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_cavity_averaged_baseline_FU_combined.csv")
+#df_cavity_combined.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_cavity_averaged_baseline_FU_combined.csv")
 
 #%%
 ### ENHANCING TUMOR DATAFRAMES ###
 
 #Baseline
 df_enhancing_tumor = make_area_df(df_patients_baseline_std, df_enhancing_tumor_overlaps)
-#df_enhancing_tumor.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_enhancing_tumor.csv")
+#df_enhancing_tumor.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_enhancing_tumor.csv")
 
 #FU
 df_enhancing_tumor_FU = make_area_df(df_patients_FU_std, df_enhancing_tumor_overlaps)
-#df_enhancing_tumor_FU.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_enhancing_tumor.csv")
+#df_enhancing_tumor_FU.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_enhancing_tumor.csv")
 
 #%%
 #Average for every subject over the rois to get one value per subject
 df_enhancing_tumor_avg = df_enhancing_tumor.groupby("sub", as_index=False).mean()
-#df_enhancing_tumor_avg.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_enhancing_tumor_averaged.csv")
+#df_enhancing_tumor_avg.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_baseline_enhancing_tumor_averaged.csv")
 
 df_enhancing_tumor_FU_avg = df_enhancing_tumor_FU.groupby("sub", as_index=False).mean()
-#df_enhancing_tumor_FU_avg.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_enhancing_tumor_averaged.csv")
+#df_enhancing_tumor_FU_avg.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_FU_enhancing_tumor_averaged.csv")
 
 #%%
 #create delta df 
 df_enhancing_tumor_combined = pd.merge(df_enhancing_tumor_avg, df_enhancing_tumor_FU_avg, on="sub", suffixes = ('_T1', '_T2'))
-#df_enhancing_tumor_combined.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_enhancing_tumor_averaged_baseline_FU_combined.csv")
+#df_enhancing_tumor_combined.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_enhancing_tumor_averaged_baseline_FU_combined.csv")
 
 
 #%%
@@ -522,28 +522,28 @@ df_cavity_combined_long["epilepsy_aed"] = df_cavity_combined_long["sub"].apply(l
 #ADDENDUM 21-02-24:
 #For epilepsy analysis remove subs that no AEDs or switched from having epilepsy to no epilepsy (forgot to do that previously) --> save in different dataframe)
 df_cavity_filtered = df_cavity_combined_long[~df_cavity_combined_long["sub"].isin(["sub-9040", "sub-9005"])]
-#df_cavity_filtered.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_cavity_baseline_FU_long_format_epilepsy_filtered.csv")
+#df_cavity_filtered.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_cavity_baseline_FU_long_format_epilepsy_filtered.csv")
 
 
 #molecular status
-spss_file = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_final.sav"
+spss_file = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_final.sav"
 df,meta = pyreadstat.read_sav(spss_file, apply_value_formats = True)
 df_cavity_combined_long["Case_ID"] = df_cavity_combined_long["sub"].str.extract("(\d+)").astype(float)
 
 df_cavity_combined_long_mol = pd.merge(df[["Case_ID", "IDH_1p19q"]],df_cavity_combined_long, on = "Case_ID", how = "inner" )
-#df_cavity_combined_long_mol.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_cavity_baseline_FU_long_format_progression_epilepsy_mol.csv")
+#df_cavity_combined_long_mol.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_cavity_baseline_FU_long_format_progression_epilepsy_mol.csv")
 
 #%%%
 
 # #ADDENDUM 21-02-24, implemented above 18/09/24:
 # #When double checking dates of progression and epilepsy, some things were noticed that need to be adjusted (see project log)
-# df_cavity = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/old/20240214_dataframe_cavity_baseline_FU_long_format_progression_epilepsy_mol.csv")
+# df_cavity = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/old/20240214_dataframe_cavity_baseline_FU_long_format_progression_epilepsy_mol.csv")
 
 # df_cavity.loc[df_cavity["sub_x"] == "sub-0085","progression"] = "progression"
 # df_cavity.loc[df_cavity["sub_x"] == "sub-9005","progression"] = "no_progression"
 # df_cavity.loc[df_cavity["sub_x"] == "sub-9031","epilepsy_aed"] = "no_epilepsy"
     
-# df_cavity.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_cavity_baseline_FU_long_format_progression_epilepsy_mol.csv")
+# df_cavity.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_cavity_baseline_FU_long_format_progression_epilepsy_mol.csv")
 #%%
 
 #%%
@@ -574,29 +574,29 @@ df_enhancing_tumor_combined_long["epilepsy_aed"] = df_enhancing_tumor_combined_l
 
 #%%
 #molecular status
-spss_file = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_final.sav"
+spss_file = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_final.sav"
 df,meta = pyreadstat.read_sav(spss_file, apply_value_formats = True)
 df_enhancing_tumor_combined_long["Case_ID"] = df_enhancing_tumor_combined_long["sub"].str.extract("(\d+)").astype(float)
 
 df_enhancing_tumor_combined_long_mol = pd.merge(df[["Case_ID", "IDH_1p19q"]],df_enhancing_tumor_combined_long, on = "Case_ID", how = "inner" )
 
-#df_enhancing_tumor_combined_long_mol.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv")
+#df_enhancing_tumor_combined_long_mol.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv")
 
 #%%
 # #ADDENDUM 21-02-24, implemented above 18/09/24: ### FOR ENHANCING TUMOR NOT DIRECTLY RELEVANT AS SUBJECTS NOT IN LIST. BUT IMPLEMENTED IT ANYWAYS FOR THE CLARITY!
 # #When double checking dates of progression and epilepsy, some things were noticed that need to be adjusted (see project log)
-# df_tumor = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/old/20240214_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv")
+# df_tumor = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/old/20240214_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv")
 
 # df_tumor.loc[df_tumor["sub"] == "sub-0085","progression"] = "progression"
 # df_tumor.loc[df_tumor["sub"] == "sub-9005","progression"] = "no_progression"
 # df_tumor.loc[df_tumor["sub"] == "sub-9031","epilepsy_aed"] = "no_epilepsy"
     
-# df_tumor.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv")
+# df_tumor.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv")
 #%%
 #ADDENDUM 21-02-24:
 #For epilepsy analysis remove subs that no AEDs or switched from having epilepsy to no epilepsy (forgot to do that previously) --> save in different dataframe)
 df_enhanc_tumor_filtered = df_enhancing_tumor_combined_long_mol[~df_enhancing_tumor_combined_long_mol["sub"].isin(["sub-9040", "sub-9005"])]
-#df_enhanc_tumor_filtered.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_enhancing_tumor_baseline_FU_long_format_epilepsy_filtered.csv")
+#df_enhanc_tumor_filtered.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_enhancing_tumor_baseline_FU_long_format_epilepsy_filtered.csv")
 
 
 #%%%
@@ -618,21 +618,21 @@ li_prog = ["sub-0017", "sub-0054", "sub-0069","sub-0085", "sub-0086", "sub-0099"
 
 df_peri_combined_long["progression"] = df_peri_combined_long["sub"].apply(lambda x: 'progression' if x in li_prog else 'no_progression')
 
-#df_peri_combined_long.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230815_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
+#df_peri_combined_long.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230815_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
 
 #%%
 # #Addendum 2024-02-21: sub-0085 also has progression so change that in peritumoral dataframe, sub-9005 decided that not count as progression so remove as progression
-# df_peri = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230815_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
+# df_peri = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230815_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
 
 # df_peri.loc[df_peri["sub_x"] == "sub-0085","progression"] = "progression"
 # df_peri.loc[df_peri["sub_x"] == "sub-9005","progression"] = "no_progression"
 
-# df_peri.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
+# df_peri.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
 
 #%%%
 #epilepsy
 #prepare dataframe where it indicates which subjects have epilepsy and take AEDs at baseline and the one-year FU. 
-df_peri = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
+df_peri = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
 
 li_no_epi = ["sub-0017", "sub-0029", "sub-9031", "sub-0094",  "sub-0100"]
 
@@ -640,19 +640,19 @@ df_peri["epilepsy_aed"] = df_peri["sub"].apply(lambda x: 'no_epilepsy' if x in l
 
 #remove subjects that no epilepsy at FU (sub-9040, sub-9005)
 df_peri = df_peri[~df_peri["sub"].isin(["sub-9040", "sub-9005"])]
-#df_peri.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_epilepsy.csv")
+#df_peri.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_epilepsy.csv")
 
 #%%
 #molecular status
 #add molecular status to dataframe that includes all subjects (before filtering the aeds)
-df_peri = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
-spss_file = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_final.sav"
+df_peri = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_progression.csv")
+spss_file = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_final.sav"
 
 df,meta = pyreadstat.read_sav(spss_file, apply_value_formats = True)
 df_peri["Case_ID"] = df_peri["sub_x"].str.extract("(\d+)").astype(float)
 
 df_peri_mol = pd.merge(df[["Case_ID", "IDH_1p19q"]],df_peri, on = "Case_ID", how = "inner" )
-#df_peri_mol.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_mol.csv")
+#df_peri_mol.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240221_dataframe_peritumoral_baseline_FU_long_format_mol.csv")
 
 
 
@@ -665,8 +665,8 @@ df_peri_mol = pd.merge(df[["Case_ID", "IDH_1p19q"]],df_peri, on = "Case_ID", how
 #percentage change between T1 and T2 
 
 #load in dataframes, same as df_peri_combined and df_cavity_combined 
-df_peri_delta = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_peritumoral_averaged_baseline_FU_combined.csv")
-df_cavity_delta = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_cavity_averaged_baseline_FU_combined.csv")
+df_peri_delta = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20230628_dataframe_peritumoral_averaged_baseline_FU_combined.csv")
+df_cavity_delta = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240214_dataframe_cavity_averaged_baseline_FU_combined.csv")
 
 
 #%%
@@ -686,7 +686,7 @@ def prepare_df_COX(df, area):
     #calculate percentage change between T1 and T2
     df["offset_z_perc_change"] = (df["offset_z_delta"]/df["offset_z_T1"])*100
     
-    #df.to_csv(f"/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240226_dataframe_{area}_delta_perc_change_no_covs.csv")
+    #df.to_csv(f"/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240226_dataframe_{area}_delta_perc_change_no_covs.csv")
 
     return(df)
 
@@ -697,7 +697,7 @@ df_cavity_change = prepare_df_COX(df_cavity_delta, "cavity")
 #%%
 ### further prepare dataframe for COX hazards analysis 
 #loadin df containing all patients and change metrics 
-#df_cavity_change= pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240226_dataframe_cavity_delta_perc_change_no_covs.csv")
+#df_cavity_change= pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240226_dataframe_cavity_delta_perc_change_no_covs.csv")
 
 #%%
 #exclude patients with progression between T1 and T2 or censored date on T2 moment
@@ -708,7 +708,7 @@ df_cavity_change_excl_prog = df_cavity_change[~df_cavity_change["sub"].isin(li_p
 #%%
 #add covariates (age at diagnosis, sex, IDH-1p19q status, KPS)
 #load in spss 
-spss_file = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/20240219_patients_progression_death_updated.sav"
+spss_file = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/04_patient_info/20240219_patients_progression_death_updated.sav"
 
 df,meta = pyreadstat.read_sav(spss_file, apply_value_formats = True)
 
@@ -725,4 +725,4 @@ df_cavity_change_met_covariates_and_PFS = pd.merge(df[["Case_ID", "progr", "PFS_
 
 #%%
 
-df_cavity_change_met_covariates_and_PFS.to_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240228_dataframe_cavity_delta_perc_change_no_prog_covs.csv")
+df_cavity_change_met_covariates_and_PFS.to_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240228_dataframe_cavity_delta_perc_change_no_prog_covs.csv")
