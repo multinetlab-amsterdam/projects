@@ -57,11 +57,11 @@ import seaborn as sns
 ### HCs Hemispheric FPN ###
 
 #HCs (N=25)  
-df_HC_Left = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/03_Dataframes/average_HC_Left_df.csv")
-df_HC_Right = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/03_Dataframes/average_HC_Right_df.csv")
+df_HC_Left = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/03_Dataframes/average_HC_Left_df.csv")
+df_HC_Right = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/03_Dataframes/average_HC_Right_df.csv")
 
 ### HC Info (i.e. info on EF scores and covariates)
-HC_info = pd.read_csv('/data/anw/anw-gold/MULTINET/culrich/02_participant info/02_HC info/HC_subject_info_after_matching.csv')
+HC_info = pd.read_csv('/data/anw/anw-work/MULTINET/culrich/02_participant info/02_HC info/HC_subject_info_after_matching.csv')
 #Prepare HC_info df to match other dfs
 HC_info.rename(columns = {"Case_ID": "sub"}, inplace = True)
 HC_info['sub'] = HC_info['sub'].astype(int).astype(str)
@@ -69,13 +69,13 @@ HC_info['sub'] = HC_info['sub'].str.replace('110+', '') #edit sub_ID (remove lea
 HC_info['sub'] = HC_info['sub'].astype(int) #change sub back into int to match other dfs
 
 ### Dataframe with all HC data (left and right FPN) ###
-#HCs_std = pd.read_csv("/data/anw/anw-gold/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_HC.csv") #all regions 
+#HCs_std = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_HC.csv") #all regions 
 
 #%%
 
 #%%
 ### Patient info and EF scores ###
-patient_info = pyreadstat.read_sav("/data/anw/anw-gold/MULTINET/culrich/02_participant info/01_patient info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_1.sav")[0]
+patient_info = pyreadstat.read_sav("/data/anw/anw-work/MULTINET/culrich/02_participant info/01_patient info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_1.sav")[0]
 patient_info['Case_ID'] = 'sub-' + patient_info['Case_ID'].astype(int).astype(str).str.zfill(4)
 # Rename colums of EF_score in patient_info file so that both CST and WFT names match"
 patient_info.rename(columns = {'flu_dier_corrected_1_zscore' : 'flu_dier_corrected_1_Zscore',
@@ -83,7 +83,7 @@ patient_info.rename(columns = {'flu_dier_corrected_1_zscore' : 'flu_dier_correct
 
 
 ### Lateralization 
-li_subs = pd.read_csv("/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/01_subjects/all_subs_list.csv")
+li_subs = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/01_subjects/all_subs_list.csv")
 #%%
 
 ####################
@@ -183,8 +183,8 @@ result_contra_bbp = paired_ttest(df_contra_combined, 'BB_welch_z', 'contralatera
 ####################
 #load in frequency specific data
 
-df_peri_baseline_freqs = pd.read_csv('/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_baseline.csv')
-df_peri_FU_freqs = pd.read_csv('/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_FU_all.csv')
+df_peri_baseline_freqs = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_baseline.csv')
+df_peri_FU_freqs = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_FU_all.csv')
 
 df_peri_combined_freqs = pd.merge(df_peri_baseline_freqs, df_peri_FU_freqs, on='sub', suffixes=('_T1', '_T2'))
 
@@ -280,7 +280,7 @@ def test_activity(df_patients, df_HCs_left, df_HCs_right,df_lateralization, area
         #results_all = pd.concat([results_df_right,results_df_left])
         
     
-    #results_all.to_csv(f'/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results/test_against_HCs_{activity}_{area}_{time}.csv')
+    #results_all.to_csv(f'/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results/test_against_HCs_{activity}_{area}_{time}.csv')
    
     #return(results_all)
         
@@ -621,7 +621,7 @@ def run_multiple_linear_regression(df_activity, df_ef, EF_Score, area, output_di
 ###############################
 ### Patient linear regression_baseline analysis ### 
 ###############################
-    output_dir = '/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results/'
+    output_dir = '/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results/'
          
 #Peritumoral
     #CST
@@ -857,7 +857,7 @@ def run_delta_regression(df_activity, df_ef, EF_Score, area, output_dir, covaria
 ###############################
 ### Patient linear regression_delta_scores analysis ### 
 ###############################
-    output_dir = "/data/anw/anw-gold/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results"
+    output_dir = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results"
          
 #Peritumoral
     #CST
@@ -943,7 +943,7 @@ def run_HC_linear_regression(df_activity, df_ef, EF_Score, area, output_dir, cov
         sns.lmplot(x=X.columns[1], y=EF_Score, data=merged_df, scatter_kws={'alpha':0.5})
         plt.title(f'for HCs: {activity_metrics} vs. {EF_Score}_in {area}')
         plt.axhline(y= -1.5, linestyle ='--', color ='grey')
-      #  plt.savefig(f'/data/anw/anw-gold/MULTINET/culrich/03_analysis/05_Graphs/04_HC_Linear_Regression/Plot of {activity_metrics} vs {EF_Score} in HCs in {area}".png', bbox_inches = "tight")
+      #  plt.savefig(f'/data/anw/anw-work/MULTINET/culrich/03_analysis/05_Graphs/04_HC_Linear_Regression/Plot of {activity_metrics} vs {EF_Score} in HCs in {area}".png', bbox_inches = "tight")
         plt.show()
         
  
@@ -1034,7 +1034,7 @@ def run_HC_linear_regression(df_activity, df_ef, EF_Score, area, output_dir, cov
 ###############################
 ### HC linear regression_baseline analysis ### 
 ###############################
-output_dir = '/data/anw/anw-gold/MULTINET/culrich/03_analysis/04_Output_Statistics/04_HC_Linear_Regression'
+output_dir = '/data/anw/anw-work/MULTINET/culrich/03_analysis/04_Output_Statistics/04_HC_Linear_Regression'
          
 #Left Hemisphere FPN
     #CST
