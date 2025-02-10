@@ -9,6 +9,8 @@ output: html_document
 #### Purpose of script: 
 Code analysis 
 
+#### Reviewed by Maxine Gorter
+
 #### Notes 
 # Part 1 # 
 # 1.1 SF36 PF data: glioma patients at time of diagnosis vs general population
@@ -18,8 +20,8 @@ Code analysis
 # 1.4 CIS20 data: glioma patients during stable disease vs general populatio
 
 # Part 2 #
-# 2.1 SF36 PF data: glioma patients at time of diagnosis vs treatment
-# 2.2 CIS20 data: glioma patients at time of diagnosis vs treatment
+# 2.1 SF36 PF data: glioma patients at time of diagnosis vs stable disease
+# 2.2 CIS20 data: glioma patients at time of diagnosis vs stable disease
 
 
 
@@ -52,6 +54,8 @@ library(gghalves);
 set.seed(42)
 
 # Glioma patients will be matched with controls from the general population based on age, sex and educational level
+# df_SF36_controls_selection = controls
+# df_SF36_diagnosis_selection = patients at time of diagnosis
 
 # Make a list of unique controls
 unique_controls <- df_SF36_controls_selection %>%
@@ -103,7 +107,6 @@ matched_data_diagnosis <- df_SF36_diagnosis_selection %>%
 
 # View the resulting data frame
 print(matched_data_diagnosis)
-
 
 
 
@@ -261,11 +264,14 @@ print(raincloud_plot)
 
 ###### 1.2 SF36 PF data: glioma patients during stable disease vs general population
 
+
 ## Match glioma patients during stable disease with general population controls
 ```{r}
 set.seed(42)
 
 # Glioma patients will be matched with controls from the general population based on age, sex and educational level
+# df_SF36_controls_selection = controls
+# df_SF36_stable_selection = patients during stable disease
 
 # Make a list of unique controls
 unique_controls <- df_SF36_controls_selection %>%
@@ -893,6 +899,7 @@ print(raincloud_plot)
 ###### Part 2 ######
 
 ##### 2.1 SF36 PF data: glioma patients at time of diagnosis vs stable disease
+# selected_pairs = patients with data at both time points; longitudinal data 
 
 ## Analyse data 
 ```{r}
@@ -1039,6 +1046,7 @@ print(raincloud_plot)
 
 
 ##### 2.2 CIS20 data: glioma patients at time of diagnosis vs stable disease
+# CIS_fitness_reversed = patiets with data at both time points (CIS20); and higher scores, means better fitness
 
 ## Analyse data 
 ```{r}
