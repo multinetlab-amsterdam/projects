@@ -9,6 +9,8 @@ output: html_document
 #### Purpose of script: 
 Code analysis 
 
+#### Reviewed by Maxine Gorter
+
 #### Notes 
 # Part 3 #
 # 3.1 SF36 diagnosis; correlations (Pearson continue/independent sample t-test dichotomy/ANOVA categorical) 
