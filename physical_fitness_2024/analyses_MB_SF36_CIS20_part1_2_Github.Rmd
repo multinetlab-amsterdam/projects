@@ -116,7 +116,7 @@ print(matched_data_diagnosis)
 df_SF36_patients_diagnosis <- matched_data_diagnosis %>%
   select(casenr, SF36_PF.x)
 
-# Dataframe with only controls; in 1 column (elke patient is gematcht met 2 controls)
+# Dataframe with only controls; in 1 column (each patient gematched with 2 controls)
 df_SF36_controls_diagnosis <- data.frame(
   casenr = c(matched_data_diagnosis$matched_control_1, matched_data_diagnosis$matched_control_2),
   SF36_PF = c(matched_data_diagnosis$SF36_PF.y, matched_data_diagnosis$SF36_PF)
@@ -124,7 +124,7 @@ df_SF36_controls_diagnosis <- data.frame(
 
 ```
 
-## Analyse data 
+## Analyze data 
 ```{r}
 # SF36 physical functioning data of glioma patients at time of diagnosis with matched controls from the general population
 
@@ -338,7 +338,7 @@ df_SF36_controls_stable <- data.frame(
 
 ```
 
-## Analyse data
+## Analyze data
 ```{r}
 # SF36 physical functioning data of glioma patients during stable disease with matched controls from the general population
 
@@ -548,7 +548,7 @@ df_CIS_fitness_controls_diagnosis <- data.frame(
 
 ```
 
-## Analyse data 
+## Analyze data 
 ```{r}
 # CIS20 physical fitness data of glioma patients at time of diagnosis with matched controls from the general population
 
@@ -854,7 +854,7 @@ legend("topright", legend = c("Patients", "Controls"),
 
 
 # Raincloud plot 
-# Zorg ervoor dat de p-waarde wordt weergegeven met 3 decimalen
+# P-value with 3 decimals 
 p_value_formatted <- sprintf("%.3f", t_test_result_stable$p.value)
 # Combine the dataframes
 df_combined_stable <- rbind(data.frame(Type = "Patients", CIS_fitness = df_CIS_fitness_patients_stable$CIS_fitness_reversed),
@@ -901,7 +901,7 @@ print(raincloud_plot)
 ##### 2.1 SF36 PF data: glioma patients at time of diagnosis vs stable disease
 # selected_pairs = patients with data at both time points; longitudinal data 
 
-## Analyse data 
+## Analyze data 
 ```{r}
 # Check normality
 # Q-Q plot SF36_PF.x
@@ -1048,7 +1048,7 @@ print(raincloud_plot)
 ##### 2.2 CIS20 data: glioma patients at time of diagnosis vs stable disease
 # CIS_fitness_reversed = patiets with data at both time points (CIS20); and higher scores, means better fitness
 
-## Analyse data 
+## Analyze data 
 ```{r}
 # Check normality
 # Q-Q plot CIS_fitness.x
@@ -1064,13 +1064,13 @@ shapiro.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1
 shapiro.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2])
 
 # T-test 
-resultaat_ttest <- wilcox.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1], selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2], paired = TRUE)
+result_ttest <- wilcox.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1], selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2], paired = TRUE)
 ```
 
 ## Create results 
 ```{r}
 # Test statistic W and number of pairs n
-W <- resultaat_ttest$statistic
+W <- result_ttest$statistic
 n <- sum(selected_pairs$Time_moment == 1)
 
 # Correction for equal values
@@ -1086,9 +1086,9 @@ SE <- sqrt((n * (n + 1) * (2 * n + 1) / 6) - tie_correction)
 z <- (W - (n * (n + 1) / 4)) / SE
 
 # Print results
-cat("W-waarde:", W, "\n")
+cat("W-value:", W, "\n")
 cat("z-score:", z, "\n")
-cat("p-waarde:", resultaat_ttest$p.value, "\n")
+cat("p-value:", resultaat_ttest$p.value, "\n")
 
 # Mean values 
 mean_moment_1 <- mean(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1])
