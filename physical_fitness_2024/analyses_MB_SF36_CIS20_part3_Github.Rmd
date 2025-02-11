@@ -1,5 +1,5 @@
 ---
-title: "Physical functioning and physical fitness in glioma patients: SF36 part 3"
+title: "Physical functioning and physical fitness in glioma patients: SF36 AND CIS20 part 3"
 output: html_document
 date: '2024-03-04'
 output: html_document
@@ -16,11 +16,11 @@ Code analysis
 # 3.1 SF36 diagnosis; correlations (Pearson continue/independent sample t-test dichotomy/ANOVA categorical) 
 # 3.2 SF36 stable; correlations (Pearson continue/independent sample t-test dichotomy/ANOVA categorical)
 
-# 3.3 CIS20 diagnosis; correlaties
-# 3.4 CIS20 stable; correlaties
+# 3.3 CIS20 diagnosis; correlations
+# 3.4 CIS20 stable; correlations
 
 # 3.5 SF36 difference diagnosis/stable; correlations
-# 3.6 CIS20 verschil diagnose/stabiel; correlaties 
+# 3.6 CIS20 verschil diagnose/stabiel; correlations 
 
 
 
@@ -67,9 +67,9 @@ df_diagnosis_SF36 <- df %>%
 # Remove NA
 df_clean_age <- na.omit(df_diagnosis_SF36[, c("age", "SF36_PF")])
 # Calculate Spearman-correlation between SF36_PF and age, ignore NA
-correlatie_SF36_age <- cor.test(df_clean_age$SF36_PF, df_clean_age$age, method = "spearman", use = "complete.obs")
+correlation_SF36_age <- cor.test(df_clean_age$SF36_PF, df_clean_age$age, method = "spearman", use = "complete.obs")
 # Print results
-print(paste("Spearman-correlatie between SF36_PF and age:", correlatie_SF36_age))
+print(paste("Spearman-correlation between SF36_PF and age:", correlation_SF36_age))
 
 rho <- correlatie_SF36_age$estimate
 p_value <- correlatie_SF36_age$p.value
@@ -253,7 +253,7 @@ summary(model_diagnosis)
 vif_values_diagnosis <- vif(model_diagnosis)
 print(vif_values_diagnosis)
 
-# Collineariteit tussen twee histology & grade
+# Collinearity between histology & grade
 v_cramer <- assocstats(table(df_diagnosis_SF36$histology, df_diagnosis_SF36$graad))$cramer
 table(v_cramer)
 
@@ -285,16 +285,16 @@ df_stable_SF36 <- df %>%
 # Remove NA
 df_clean_age <- na.omit(df_stable_SF36[, c("age", "SF36_PF")])
 # Calculate Spearman-correlation between SF36_PF and age, ignore NA
-correlatie_SF36_age <- cor.test(df_clean_age$SF36_PF, df_clean_age$age, method = "spearman", use = "complete.obs")
+correlation_SF36_age <- cor.test(df_clean_age$SF36_PF, df_clean_age$age, method = "spearman", use = "complete.obs")
 # Print results
-print(paste("Spearman-correlatie between SF36_PF and age:", correlatie_SF36_age))
+print(paste("Spearman-correlation between SF36_PF and age:", correlation_SF36_age))
 
 rho <- correlatie_SF36_age$estimate
 p_value <- correlatie_SF36_age$p.value
 
 # Print results
-print(paste("Spearman-correlatie tussen SF36_PF en leeftijd:", rho))
-print(paste("P-waarde:", p_value))
+print(paste("Spearman-correlatie between SF36_PF and age:", rho))
+print(paste("P-value:", p_value))
 
 ```
 
@@ -448,6 +448,9 @@ print(ttest_KPS)
 # Convert to factor
 df_stable_SF36$RT_XT_treatment <- factor(df_stable_SF36$RT_XT_treatment)
 
+# Convert to factor and set 'treatment 4 (nothing)' as reference level
+df_stable_SF36$RT_XT_treatment <- factor(df_stable_SF36$RT_XT_treatment, levels = c("4", "1", "2", "3"))
+
 # ANOVA
 anova_RT_XT_treatment  <- kruskal.test(SF36_PF ~ RT_XT_treatment , data = df_stable_SF36)
 print(anova_RT_XT_treatment )
@@ -513,16 +516,16 @@ df_diagnosis_CIS_fitness <- df %>%
 # Remove NA
 df_clean_age <- na.omit(df_diagnosis_CIS_fitness[, c("age", "CIS_fitness")])
 # Calculate Spearman-correlation between CIS_fitness and age, ignore NA
-correlatie_CIS_fitness_age <- cor.test(df_clean_age$CIS_fitness, df_clean_age$age, method = "spearman", use = "complete.obs")
+correlation_CIS_fitness_age <- cor.test(df_clean_age$CIS_fitness, df_clean_age$age, method = "spearman", use = "complete.obs")
 # Print results
-print(paste("Spearman-correlatie between CIS_fitness and age:", correlatie_CIS_fitness_age))
+print(paste("Spearman-correlation between CIS_fitness and age:", correlation_CIS_fitness_age))
 
 rho <- correlatie_CIS_fitness_age$estimate
 p_value <- correlatie_CIS_fitness_age$p.value
 
 # Print results
-print(paste("Spearman-correlatie tussen SF36_PF en leeftijd:", rho))
-print(paste("P-waarde:", p_value))
+print(paste("Spearman-correlation between SF36_PF and age:", rho))
+print(paste("P-value:", p_value))
 
 ```
 
@@ -723,16 +726,16 @@ df_stable_CIS_fitness <- df %>%
 # Remove NA
 df_clean_age <- na.omit(df_stable_CIS_fitness[, c("age", "CIS_fitness")])
 # Calculate Spearman-correlation between CIS_fitness and age, ignore NA
-correlatie_CIS_fitness_age <- cor.test(df_clean_age$CIS_fitness, df_clean_age$age, method = "spearman", use = "complete.obs")
+correlation_CIS_fitness_age <- cor.test(df_clean_age$CIS_fitness, df_clean_age$age, method = "spearman", use = "complete.obs")
 # Print results
-print(paste("Spearman-correlatie between CIS_fitness and age:", correlatie_CIS_fitness_age))
+print(paste("Spearman-correlation between CIS_fitness and age:", correlation_CIS_fitness_age))
 
-rho <- correlatie_CIS_fitness_age$estimate
-p_value <- correlatie_CIS_fitness_age$p.value
+rho <- correlation_CIS_fitness_age$estimate
+p_value <- correlation_CIS_fitness_age$p.value
 
 # Print results
-print(paste("Spearman-correlatie tussen SF36_PF en leeftijd:", rho))
-print(paste("P-waarde:", p_value))
+print(paste("Spearman-correlation between SF36_PF and age:", rho))
+print(paste("P-value:", p_value))
 
 ```
 
@@ -896,6 +899,9 @@ print(ttest_NIHSS)
 # Convert to factor
 df_stable_CIS_fitness$RT_XT_treatment <- factor(df_stable_CIS_fitness$RT_XT_treatment)
 
+# Convert to factor and set 'treatment 4 (nothing)' as reference level
+df_stable_CIS_fitness$RT_XT_treatment <- factor(df_stable_CIS_fitness$RT_XT_treatment, levels = c("4", "1", "2", "3"))
+
 # ANOVA
 anova_RT_XT_treatment  <- kruskal.test(CIS_fitness ~ RT_XT_treatment , data = df_stable_CIS_fitness)
 print(anova_RT_XT_treatment )
@@ -942,7 +948,7 @@ model_SF36_age <- lme(fixed = SF36_PF ~ Time_moment * age,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_age)
 
 fixef(model_SF36_age)
@@ -953,12 +959,15 @@ model_summary_age$tTable
 
 # Sex
 ```{r}
+# Convert to factor
+selected_pairs_SF36$sex <- factor(selected_pairs_SF36$sex)
+
 # Fit linear mixed model; sex
 model_SF36_sex <- lme(fixed = SF36_PF ~ Time_moment * sex,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_sex)
 
 fixef(model_SF36_sex)
@@ -977,7 +986,7 @@ model_SF36_educ <- lme(fixed = SF36_PF ~ Time_moment * education_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_educ)
 
 fixef(model_SF36_educ)
@@ -996,7 +1005,7 @@ model_SF36_hist <- lme(fixed = SF36_PF ~ Time_moment * histology,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_hist)
 
 fixef(model_SF36_hist)
@@ -1015,7 +1024,7 @@ model_SF36_loc <- lme(fixed = SF36_PF ~ Time_moment * location_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_loc)
 
 fixef(model_SF36_loc)
@@ -1034,7 +1043,7 @@ model_SF36_side <- lme(fixed = SF36_PF ~ Time_moment * side,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_side)
 
 fixef(model_SF36_side)
@@ -1053,7 +1062,7 @@ model_SF36_graad <- lme(fixed = SF36_PF ~ Time_moment * graad,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_graad)
 
 fixef(model_SF36_graad)
@@ -1075,7 +1084,7 @@ model_SF36_epi <- lme(fixed = SF36_PF ~ Time_moment * epilepsy_dich,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_epi)
 
 fixef(model_SF36_epi)
@@ -1091,7 +1100,7 @@ model_SF36_dexa <- lme(fixed = SF36_PF ~ Time_moment * dexa,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_dexa)
 
 fixef(model_SF36_dexa)
@@ -1110,7 +1119,7 @@ model_SF36_RTXT <- lme(fixed = SF36_PF ~ RT_XT_treatment * Time_moment,
                        random = ~ Time_moment | casenr, 
                        data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_RTXT)
 
 fixef(model_SF36_RTXT)
@@ -1129,7 +1138,7 @@ model_SF36_kps <- lme(fixed = SF36_PF ~ Time_moment * KPS_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_kps)
 
 fixef(model_SF36_kps)
@@ -1148,7 +1157,7 @@ model_SF36_NIHSS <- lme(fixed = SF36_PF ~ Time_moment * NIHSS_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_SF36_NIHSS)
 
-# Bekijk de model output
+# View model output
 summary(model_SF36_NIHSS)
 
 fixef(model_SF36_NIHSS)
@@ -1164,10 +1173,10 @@ model_SF36 <- lme(
   fixed = SF36_PF ~ Time_moment * (age + sex + education_grouped + RT_XT_treatment + graad + NIHSS_grouped),
   random = ~ Time_moment | casenr, 
   data = selected_pairs_SF36,
-  na.action=na.exclude #NA wordt niet meegenomen in analyse (fitten van model), maar structuur blijft gelijk 
+  na.action=na.exclude
 )
 
-# Bekijk de model output
+# View model output
 summary(model_SF36)
 
 fixef(model_SF36)
@@ -1192,7 +1201,7 @@ model_CIS_age <- lme(fixed = CIS_fitness ~ Time_moment * age,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_age)
 
 fixef(model_CIS_age)
@@ -1203,12 +1212,15 @@ model_summary_age$tTable
 
 # Sex
 ```{r}
+# Convert to factor
+selected_pairs_CIS$sex <- factor(selected_pairs_CIS$sex)
+
 # Fit linear mixed model; sex
 model_CIS_sex <- lme(fixed = CIS_fitness ~ Time_moment * sex,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_sex)
 
 fixef(model_CIS_sex)
@@ -1227,7 +1239,7 @@ model_CIS_educ <- lme(fixed = CIS_fitness ~ Time_moment * education_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_educ)
 
 fixef(model_CIS_educ)
@@ -1246,7 +1258,7 @@ model_CIS_hist <- lme(fixed = CIS_fitness ~ Time_moment * histology,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_hist)
 
 fixef(model_CIS_hist)
@@ -1265,7 +1277,7 @@ model_CIS_loc <- lme(fixed = CIS_fitness ~ Time_moment * location_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_loc)
 
 fixef(model_CIS_loc)
@@ -1284,7 +1296,7 @@ model_CIS_side <- lme(fixed = CIS_fitness ~ Time_moment * side,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_side)
 
 fixef(model_CIS_side)
@@ -1303,7 +1315,7 @@ model_CIS_graad <- lme(fixed = CIS_fitness ~ Time_moment * graad,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_graad)
 
 fixef(model_CIS_graad)
@@ -1325,7 +1337,7 @@ model_CIS_epi <- lme(fixed = CIS_fitness ~ Time_moment * epilepsy_dich,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_epi)
 
 fixef(model_CIS_epi)
@@ -1341,7 +1353,7 @@ model_CIS_dexa <- lme(fixed = CIS_fitness ~ Time_moment * dexa,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_dexa)
 
 fixef(model_CIS_dexa)
@@ -1360,7 +1372,7 @@ model_CIS20_RTXT <- lme(fixed = CIS_fitness ~ RT_XT_treatment * Time_moment,
                        random = ~ Time_moment | casenr, 
                        data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS20_RTXT)
 
 fixef(model_CIS20_RTXT)
@@ -1379,7 +1391,7 @@ model_CIS_kps <- lme(fixed = CIS_fitness ~ Time_moment * KPS_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_kps)
 
 fixef(model_CIS_kps)
@@ -1398,7 +1410,7 @@ model_CIS_NIHSS <- lme(fixed = CIS_fitness ~ Time_moment * NIHSS_grouped,
                            random = ~ Time_moment | casenr, 
                            data = selected_pairs_CIS_NIHSS)
 
-# Bekijk de model output
+# View model output
 summary(model_CIS_NIHSS)
 
 fixef(model_CIS_NIHSS)
@@ -1416,7 +1428,7 @@ model_CIS <- lme(
   data = selected_pairs_CIS
 )
 
-# Bekijk de model output
+# View model output
 summary(model_CIS)
 
 fixef(model_CIS)
