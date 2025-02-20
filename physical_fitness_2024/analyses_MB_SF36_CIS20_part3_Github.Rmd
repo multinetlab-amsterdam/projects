@@ -20,7 +20,7 @@ Code analysis
 # 3.4 CIS20 stable; correlations
 
 # 3.5 SF36 difference diagnosis/stable; correlations
-# 3.6 CIS20 verschil diagnose/stabiel; correlations 
+# 3.6 CIS20 difference diagnose/stabiel; correlations 
 
 
 
