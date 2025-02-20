@@ -1,0 +1,1188 @@
+---
+title: "Physical functioning and physical fitness in glioma patients"
+author: "Marieke Blom"
+date: '2024-01-05'
+output: html_document
+---
+
+#### Email: m.e.c.blom@amsterdamumc.nl
+#### Purpose of script: 
+Code analysis 
+
+#### Reviewed by Maxine Gorter
+
+#### Notes 
+# Part 1 # 
+# 1.1 SF36 PF data: glioma patients at time of diagnosis vs general population
+# 1.2 SF36 PF data: glioma patients during stable disease vs general population
+
+# 1.3 CIS20 data: glioma patients at time of diagnosis vs general population
+# 1.4 CIS20 data: glioma patients during stable disease vs general populatio
+
+# Part 2 #
+# 2.1 SF36 PF data: glioma patients at time of diagnosis vs stable disease
+# 2.2 CIS20 data: glioma patients at time of diagnosis vs stable disease
+
+
+
+# Load libraries
+```{r warning = FALSE, message = FALSE}
+library(plyr);
+library(tidyverse);
+library(readr);
+library(readxl);
+library(haven);
+library(stats);
+library(finalfit);
+library(dplyr);
+library(dbplyr);
+library(Hmisc);
+library(MatchIt);
+library(ggplot2);
+library(tidyr);
+library(ggridges);
+library(ggdist);
+library(gghalves);
+```
+
+###### Part 1 ######
+
+###### 1.1 SF36 PF data: glioma patients at time of diagnosis vs general population controls
+
+## Match glioma patients at time of diagnosis with general population controls  
+```{r}
+set.seed(42)
+
+# Glioma patients will be matched with controls from the general population based on age, sex and educational level
+# df_SF36_controls_selection = controls
+# df_SF36_diagnosis_selection = patients at time of diagnosis
+
+# Make a list of unique controls
+unique_controls <- df_SF36_controls_selection %>%
+  distinct(casenr, .keep_all = TRUE)
+
+# Initialization of an empty list to keep track of which checks have already been matched
+matched_controls <- c()
+
+# Matching
+matched_data_diagnosis <- df_SF36_diagnosis_selection %>%
+  filter(education_grouped_patient %in% c("1-2", "3-5", "6-8")) %>%
+  mutate(matched_control_1 = NA, matched_control_2 = NA) %>%
+  rowwise() %>%
+  mutate(
+    matched_control_1 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient,
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    },
+    matched_control_2 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    }
+  ) %>%
+  ungroup() %>%
+  left_join(unique_controls, by = c("matched_control_1" = "casenr")) %>%
+  left_join(unique_controls, by = c("matched_control_2" = "casenr"))
+
+# View the resulting data frame
+print(matched_data_diagnosis)
+
+
+
+# Make a new dataframe; for the t-test 
+
+# Dataframe with only patients & remove duplicates for the analysis 
+df_SF36_patients_diagnosis <- matched_data_diagnosis %>%
+  select(casenr, SF36_PF.x)
+
+# Dataframe with only controls; in 1 column (each patient gematched with 2 controls)
+df_SF36_controls_diagnosis <- data.frame(
+  casenr = c(matched_data_diagnosis$matched_control_1, matched_data_diagnosis$matched_control_2),
+  SF36_PF = c(matched_data_diagnosis$SF36_PF.y, matched_data_diagnosis$SF36_PF)
+)
+
+```
+
+## Analyze data 
+```{r}
+# SF36 physical functioning data of glioma patients at time of diagnosis with matched controls from the general population
+
+# First check normality
+# Q-Q plot SF36_PF.x
+qqnorm(df_SF36_patients_diagnosis$SF36_PF.x)
+qqline(df_SF36_patients_diagnosis$SF36_PF.x, col = 2)
+# Q-Q plot SF36_PF
+qqnorm(df_SF36_controls_diagnosis$SF36_PF)
+qqline(df_SF36_controls_diagnosis$SF36_PF, col = 2)
+
+# Shapiro-Wilk-test SF36_PF.x
+shapiro.test(df_SF36_patients_diagnosis$SF36_PF.x)
+# Shapiro-Wilk-test SF36_PF
+shapiro.test(df_SF36_controls_diagnosis$SF36_PF)
+
+# Perform the t-test (non parametric)
+# df_SF36_patients_diagnosis = glioma patients at time of diagnosis
+# df_SF36_controls_diagnosis = matched general population controls
+t_test_result_diagnosis <- wilcox.test(df_SF36_patients_diagnosis$SF36_PF.x, df_SF36_controls_diagnosis$SF36_PF)
+
+```
+
+## Create results 
+```{r}
+# Calculating sample sizes
+n_patients <- length(df_SF36_patients_diagnosis$SF36_PF.x)
+n_controls <- length(df_SF36_controls_diagnosis$SF36_PF)
+
+# U-value
+U_value <- as.numeric(t_test_result_diagnosis$statistic)
+
+# Calculate expected value and standard deviation of U
+E_U <- (n_patients * n_controls) / 2
+SE_U <- sqrt((n_patients * n_controls * (n_patients + n_controls + 1)) / 12)
+
+# Z-value
+Z_value <- (U_value - E_U) / SE_U
+
+# Mean
+mean_patients <- mean(df_SF36_patients_diagnosis$SF36_PF.x)
+mean_controls <- mean(df_SF36_controls_diagnosis$SF36_PF)
+
+# Median
+median_patients <- median(df_SF36_patients_diagnosis$SF36_PF.x)
+median_controls <- median(df_SF36_controls_diagnosis$SF36_PF)
+
+# SD
+sd_patients <- sd(df_SF36_patients_diagnosis$SF36_PF.x)
+sd_controls <- sd(df_SF36_controls_diagnosis$SF36_PF)
+
+# IQR's
+iqr_patients <- IQR(df_SF36_patients_diagnosis$SF36_PF.x)
+iqr_controls <- IQR(df_SF36_controls_diagnosis$SF36_PF)
+
+# Calculating the 25th, 50th (median), and 75th percentiles
+quantiles_patients <- quantile(df_SF36_patients_diagnosis$SF36_PF.x, probs = c(0.25, 0.5, 0.75))
+quantiles_controls <- quantile(df_SF36_controls_diagnosis$SF36_PF, probs = c(0.25, 0.5, 0.75))
+
+# Displaying results in a table
+result_table <- data.frame(
+  Vergelijking = "SF36 PF patients vs. SF36 PF controls",
+  U_value = U_value,
+  Z_value = Z_value,
+  P_value = t_test_result_diagnosis$p.value,
+  Mean_patients = mean_patients,
+  Mean_controls = mean_controls,
+  Median_patients = median_patients,
+  Median_controls = median_controls,
+  SD_patients = sd_patients,
+  SD_controls = sd_controls,
+  IQR_patients = iqr_patients,
+  IQR_controls = iqr_controls,
+  Q25_patients = quantiles_patients[1],
+  Q50_patients = quantiles_patients[2], # Dit is de mediaan
+  Q75_patients = quantiles_patients[3],
+  Q25_controls = quantiles_controls[1],
+  Q50_controls = quantiles_controls[2], # Dit is de mediaan
+  Q75_controls = quantiles_controls[3]
+)
+
+print(result_table)
+
+```
+
+## Plot data
+```{r}
+# Make a boxplot
+boxplot(df_SF36_patients_diagnosis$SF36_PF.x, df_SF36_controls_diagnosis$SF36_PF,
+        names = c("SF36 PF patients at time of diagnosis", "SF36 PF controls"),
+        main = "Boxplot of SF36 PF Scores",
+        ylab = "SF36 PF Score",
+        col = c("darkgrey", "grey18"))
+
+# Add a legend 
+legend("topright", legend = c("Patients", "Controls"),
+       col = c("darkgrey", "grey18"), lty = 1, cex = 0.8)
+
+
+
+# Raincloud plot
+# Combine the dataframes
+df_combined_diagnosis <- rbind(data.frame(Type = "Patients", SF36_PF = df_SF36_patients_diagnosis$SF36_PF.x),
+                               data.frame(Type = "Controls", SF36_PF = df_SF36_controls_diagnosis$SF36_PF))
+
+# Set the factor Type in the desired order
+df_combined_diagnosis$Type <- factor(df_combined_diagnosis$Type, levels = c("Patients", "Controls"))
+
+# Create a raincloud plot
+raincloud_plot <- ggplot(df_combined_diagnosis, aes(x = Type, y = SF36_PF, fill = Type)) +
+  geom_half_violin(aes(x = Type, y = SF36_PF, fill = Type), 
+                   width = 0.6, alpha = 0.6, side = "l") +  # Change to half violin
+  geom_point(position = position_jitter(width = .15), alpha = 0.5) +
+  geom_boxplot(width = .1, outlier.shape = NA, alpha = 0.5, position = position_nudge(x = 0.2, y = 0.1)) +  # Nudge the boxplot right and up
+  scale_fill_manual(values = c("darkgrey", "grey18")) +
+  theme_minimal() +
+  labs(x = "", y = "Physical functioning") +  # Remove x-axis label
+   ggtitle("Preoperatively") + 
+  theme(
+    legend.position = "none",  # Remove the legend
+    axis.text.y = element_text(size = 14),  # Increase font size of y-axis labels
+    axis.text.x = element_text(size = 14),   # Increase font size of x-axis labels ("Patients" and "Controls")
+    axis.title.y = element_text(size = 16),  # Increase font size of y-axis title ("SF36")
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+ annotate("text", x = 1.5, y = max(df_combined_diagnosis$SF36_PF) + 3, 
+           label = paste("p =", round(t_test_result_diagnosis$p.value, 3), "**"), size = 4)  
+
+# Show the plot
+print(raincloud_plot)
+
+```
+
+
+
+
+
+###### 1.2 SF36 PF data: glioma patients during stable disease vs general population
+
+
+## Match glioma patients during stable disease with general population controls
+```{r}
+set.seed(42)
+
+# Glioma patients will be matched with controls from the general population based on age, sex and educational level
+# df_SF36_controls_selection = controls
+# df_SF36_stable_selection = patients during stable disease
+
+# Make a list of unique controls
+unique_controls <- df_SF36_controls_selection %>%
+  distinct(casenr, .keep_all = TRUE)
+
+# Initialization of an empty list to keep track of which checks have already been matched
+matched_controls <- c()
+
+# Matching 
+matched_data_stable <- df_SF36_stable_selection %>%
+  filter(education_grouped_patient %in% c("1-2", "3-5", "6-8")) %>%
+  mutate(matched_control_1 = NA, matched_control_2 = NA) %>%
+  rowwise() %>%
+  mutate(
+    matched_control_1 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    },
+    matched_control_2 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    }
+  ) %>%
+  ungroup() %>%
+  left_join(unique_controls, by = c("matched_control_1" = "casenr")) %>%
+  left_join(unique_controls, by = c("matched_control_2" = "casenr"))
+
+# View the resulting data frame
+print(matched_data_stable)
+
+
+
+# Dataframe with only patients  
+df_SF36_patients_stable <- matched_data_stable %>%
+  select(casenr, SF36_PF.x)
+
+# Dataframe with only controls; in 1 column
+df_SF36_controls_stable <- data.frame(
+  casenr = c(matched_data_stable$matched_control_1, matched_data_stable$matched_control_2),
+  SF36_PF = c(matched_data_stable$SF36_PF.y, matched_data_stable$SF36_PF)
+)
+
+```
+
+## Analyze data
+```{r}
+# SF36 physical functioning data of glioma patients during stable disease with matched controls from the general population
+
+# Check normality
+# Q-Q plot SF36_PF.x
+qqnorm(df_SF36_patients_stable$SF36_PF.x)
+qqline(df_SF36_patients_stable$SF36_PF.x, col = 2)
+# Q-Q plot SF36_PF.y
+qqnorm(df_SF36_controls_stable$SF36_PF)
+qqline(df_SF36_controls_stable$SF36_PF, col = 2)
+
+# Shapiro-Wilk-test SF36_PF.x
+shapiro.test(df_SF36_patients_stable$SF36_PF.x)
+# Shapiro-Wilk-test SF36_PF.y
+shapiro.test(df_SF36_controls_stable$SF36_PF)
+
+
+# Perform t-test (non parametric)
+t_test_result_stable <- wilcox.test(df_SF36_patients_stable$SF36_PF.x, df_SF36_controls_stable$SF36_PF)
+
+```
+
+## Create results
+```{r}
+# Calculating sample sizes
+n_patients <- length(df_SF36_patients_stable$SF36_PF.x)
+n_controls <- length(df_SF36_controls_stable$SF36_PF)
+
+# U-value
+U_value <- as.numeric(t_test_result_stable$statistic)
+
+# Calculate expected value and standard deviation of U
+E_U <- (n_patients * n_controls) / 2
+SE_U <- sqrt((n_patients * n_controls * (n_patients + n_controls + 1)) / 12)
+
+# Z-value
+Z_value <- (U_value - E_U) / SE_U
+
+# Mean
+mean_patients <- mean(df_SF36_patients_stable$SF36_PF.x)
+mean_controls <- mean(df_SF36_controls_stable$SF36_PF)
+
+# Median
+median_patients <- median(df_SF36_patients_stable$SF36_PF.x)
+median_controls <- median(df_SF36_controls_stable$SF36_PF)
+
+# SD
+sd_patients <- sd(df_SF36_patients_stable$SF36_PF.x)
+sd_controls <- sd(df_SF36_controls_stable$SF36_PF)
+
+# IQR's
+iqr_patients <- IQR(df_SF36_patients_stable$SF36_PF.x)
+iqr_controls <- IQR(df_SF36_controls_stable$SF36_PF)
+
+# Calculating the 25th, 50th (median), and 75th percentiles
+quantiles_patients <- quantile(df_SF36_patients_stable$SF36_PF.x, probs = c(0.25, 0.5, 0.75))
+quantiles_controls <- quantile(df_SF36_controls_stable$SF36_PF, probs = c(0.25, 0.5, 0.75))
+
+# Displaying results in a table
+result_table <- data.frame(
+  Vergelijking = "SF36 PF patients vs. SF36 PF controls",
+  U_value = U_value,
+  Z_value = Z_value,
+  P_value = t_test_result_stable$p.value,
+  Mean_patients = mean_patients,
+  Mean_controls = mean_controls,
+  Median_patients = median_patients,
+  Median_controls = median_controls,
+  SD_patients = sd_patients,
+  SD_controls = sd_controls,
+  IQR_patients = iqr_patients,
+  IQR_controls = iqr_controls,
+  Q25_patients = quantiles_patients[1],
+  Q50_patients = quantiles_patients[2], # median
+  Q75_patients = quantiles_patients[3],
+  Q25_controls = quantiles_controls[1],
+  Q50_controls = quantiles_controls[2], # median
+  Q75_controls = quantiles_controls[3]
+)
+
+print(result_table)
+
+```
+
+## Plot data
+```{r}
+# Make a boxplot
+boxplot(df_SF36_patients_stable$SF36_PF.x, df_SF36_controls_stable$SF36_PF,
+        names = c("SF36 PF patients during stable disease", "SF36 PF controls"),
+        main = "Boxplot of SF36 PF Scores",
+        ylab = "SF36 PF Score",
+        col = c("darkgrey", "grey18"))
+
+# Add a legend 
+legend("topright", legend = c("Patients", "Controls"),
+       col = c("darkgrey", "grey18"), lty = 1, cex = 0.8)
+
+
+
+# Raincloud plot
+# Combine the dataframes
+df_combined_stable <- rbind(data.frame(Type = "Patients", SF36_PF = df_SF36_patients_stable$SF36_PF.x),
+                               data.frame(Type = "Controls", SF36_PF = df_SF36_controls_stable$SF36_PF))
+
+# Set the factor Type in the desired order
+df_combined_stable$Type <- factor(df_combined_stable$Type, levels = c("Patients", "Controls"))
+
+# Create a raincloud plot
+raincloud_plot <- ggplot(df_combined_stable, aes(x = Type, y = SF36_PF, fill = Type)) +
+  geom_half_violin(aes(x = Type, y = SF36_PF, fill = Type), 
+                   width = 0.6, alpha = 0.6, side = "l") +  # Change to half violin
+  geom_point(position = position_jitter(width = .15), alpha = 0.5) +
+  geom_boxplot(width = .1, outlier.shape = NA, alpha = 0.5, position = position_nudge(x = 0.2, y = 0.1)) +  # Nudge the boxplot right and up
+  scale_fill_manual(values = c("darkgrey", "grey18")) +
+  theme_minimal() +
+  labs(x = "", y = "Physical functioning") +
+   ggtitle("After primary treatment") + 
+  theme(
+    legend.position = "none",  # Remove the legend
+    axis.text.y = element_text(size = 14),  # Increase font size of y-axis labels
+    axis.text.x = element_text(size = 14),   # Increase font size of x-axis labels ("Patients" and "Controls")
+    axis.title.y = element_text(size = 16),  # Increase font size of y-axis title ("SF36")
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+ annotate("text", x = 1.5, y = max(df_combined_stable$SF36_PF) + 3, 
+           label = paste("p =", round(t_test_result_stable$p.value, 3), "**"), size = 4)  
+
+# Show the plot
+print(raincloud_plot)
+
+```
+
+
+
+
+
+###### 1.3 CIS20 data: glioma patients at time of diagnosis vs general population
+
+## Match glioma patients at time of diagnosis with general population controls
+```{r}
+set.seed(42)
+
+# Glioma patients will be matched with controls from the general population based on age, sex and educational level
+
+# Make a list of unique controls
+unique_controls <- df_CIS_fitness_controls_selection %>%
+  distinct(casenr, .keep_all = TRUE)
+
+# Initialization of an empty list to keep track of which checks have already been matched
+matched_controls <- c()
+
+# Matching
+matched_data_diagnosis <- df_CIS_fitness_diagnosis_selection %>%
+  filter(education_grouped_patient %in% c("group 1", "group 2", "group 3")) %>%
+  mutate(matched_control_1 = NA, matched_control_2 = NA) %>%
+  rowwise() %>%
+  mutate(
+    matched_control_1 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    },
+    matched_control_2 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    }
+  ) %>%
+  ungroup() %>%
+  left_join(unique_controls, by = c("matched_control_1" = "casenr")) %>%
+  left_join(unique_controls, by = c("matched_control_2" = "casenr"))
+
+# View the resulting data frame
+print(matched_data_diagnosis)
+
+
+
+# Dataframe with only patients & remove duplicates for the analysis 
+df_CIS_fitness_patients_diagnosis <- matched_data_diagnosis %>%
+  select(casenr, CIS_fitness_reversed)
+
+# Dataframe with only controls; in 1 column
+df_CIS_fitness_controls_diagnosis <- data.frame(
+  casenr = c(matched_data_diagnosis$matched_control_1, matched_data_diagnosis$matched_control_2),
+  CIS_fitness = c(matched_data_diagnosis$CIS_fitness.x, matched_data_diagnosis$CIS_fitness.y)
+)
+
+```
+
+## Analyze data 
+```{r}
+# CIS20 physical fitness data of glioma patients at time of diagnosis with matched controls from the general population
+
+# Check normality
+# Q-Q plot CIS_fitness.x
+qqnorm(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+qqline(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed, col = 2)
+# Q-Q plot CIS_fitness.y
+qqnorm(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+qqline(df_CIS_fitness_controls_diagnosis$CIS_fitness, col = 2)
+
+# Shapiro-Wilk-test CIS_fitness.x
+shapiro.test(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+# Shapiro-Wilk-test CIS_fitness.y
+shapiro.test(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+
+# Perform the t-test (non parametric)
+t_test_result_diagnosis <- wilcox.test(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed, df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+print(t_test_result_diagnosis)
+```
+
+## Create results 
+```{r}
+# Calculating sample sizes
+n_patients_diagnosis <- length(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+n_controls_diagnosis <- length(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+# U-vlaue
+U_value_diagnosis <- as.numeric(t_test_result_diagnosis$statistic)
+
+# Calculate expected value and standard deviation of U
+E_U_diagnosis <- (n_patients_diagnosis * n_controls_diagnosis) / 2
+SE_U_diagnosis <- sqrt((n_patients_diagnosis * n_controls_diagnosis * (n_patients_diagnosis + n_controls_diagnosis + 1)) / 12)
+
+# Z-value
+Z_value_diagnosis <- (U_value_diagnosis - E_U_diagnosis) / SE_U_diagnosis
+
+# Mean
+mean_patients_diagnosis <- mean(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+mean_controls_diagnosis <- mean(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+# Median
+median_patients_diagnosis <- median(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+median_controls_diagnosis <- median(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+# SD
+sd_patients_diagnosis <- sd(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+sd_controls_diagnosis <- sd(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+# IQR's
+iqr_patients_diagnosis <- IQR(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed)
+iqr_controls_diagnosis <- IQR(df_CIS_fitness_controls_diagnosis$CIS_fitness)
+
+# Calculating the 25th, 50th (median), and 75th percentiles
+quantiles_patients_diagnosis <- quantile(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed, probs = c(0.25, 0.5, 0.75))
+quantiles_controls_diagnosis <- quantile(df_CIS_fitness_controls_diagnosis$CIS_fitness, probs = c(0.25, 0.5, 0.75))
+
+# Displaying results in a table
+result_table_diagnosis <- data.frame(
+  Vergelijking = "CIS fitness patients vs. CIS fitness controls: diagnosis",
+  U_value = U_value_diagnosis,
+  Z_value = Z_value_diagnosis,
+  P_value = t_test_result_diagnosis$p.value,
+  Mean_patients = mean_patients_diagnosis,
+  Mean_controls = mean_controls_diagnosis,
+  Median_patients = median_patients_diagnosis,
+  Median_controls = median_controls_diagnosis,
+  SD_patients = sd_patients_diagnosis,
+  SD_controls = sd_controls_diagnosis,
+  IQR_patients = iqr_patients_diagnosis,
+  IQR_controls = iqr_controls_diagnosis,
+  Q25_patients = quantiles_patients_diagnosis[1],
+  Q50_patients = quantiles_patients_diagnosis[2], # median
+  Q75_patients = quantiles_patients_diagnosis[3],
+  Q25_controls = quantiles_controls_diagnosis[1],
+  Q50_controls = quantiles_controls_diagnosis[2], # median
+  Q75_controls = quantiles_controls_diagnosis[3]
+)
+
+print(result_table_diagnosis)
+
+```
+
+## Plot data
+```{r}
+# Make a boxplot
+boxplot(df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed, df_CIS_fitness_controls_diagnosis$CIS_fitness,
+        names = c("CIS_fitness patients at time of diagnosis", "CIS_fitness controls"),
+        main = "Boxplot of CIS_fitness Scores",
+        ylab = "CIS_fitness Score",
+        col = c("darkgrey", "grey18"))
+
+# Add a legend 
+legend("topright", legend = c("Patients", "Controls"),
+       col = c("darkgrey", "grey18"), lty = 1, cex = 0.8)
+
+
+
+# Raincloud plot 
+# Combine the dataframes
+df_combined_diagnosis <- rbind(data.frame(Type = "Patients", CIS_fitness = df_CIS_fitness_patients_diagnosis$CIS_fitness_reversed),
+                               data.frame(Type = "Controls", CIS_fitness = df_CIS_fitness_controls_diagnosis$CIS_fitness))
+
+# Set the factor Type in the desired order
+df_combined_diagnosis$Type <- factor(df_combined_diagnosis$Type, levels = c("Patients", "Controls"))
+
+# Create a raincloud plot
+raincloud_plot <- ggplot(df_combined_diagnosis, aes(x = Type, y = CIS_fitness, fill = Type)) +
+  geom_half_violin(aes(x = Type, y = CIS_fitness, fill = Type), 
+                   width = 0.6, alpha = 0.6, side = "l") +  # Change to half violin
+  geom_point(position = position_jitter(width = 0.1, height = 0), alpha = 0.5) +  # Jitter only on x-axis
+  geom_boxplot(width = 0.1, outlier.shape = NA, alpha = 0.5, position = position_nudge(x = 0.2, y = 0)) +  # Nudge the boxplot right
+  scale_fill_manual(values = c("darkgrey", "grey18")) +
+  theme_minimal() +
+  labs(x = "", y = "Physical fitness") +
+  ggtitle("Preoperatively") + 
+  theme(
+    legend.position = "none",  # Remove the legend
+    axis.text.y = element_text(size = 14),  # Increase font size of y-axis labels
+    axis.text.x = element_text(size = 14),   # Increase font size of x-axis labels ("Patients" and "Controls")
+    axis.title.y = element_text(size = 16),  # Increase font size of y-axis title ("CIS20 physical fitness") 
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+  annotate("text", x = 1.5, y = max(df_combined_diagnosis$CIS_fitness) + 1, 
+           label = paste("p =", round(t_test_result_diagnosis$p.value, 3), "*"), size = 4)  
+
+# Show the plot
+print(raincloud_plot)
+
+```
+
+
+
+
+
+###### 1.4 CIS20 data: glioma patients during stable disease vs general population
+
+## Match glioma patients during stable disease with general population controls
+```{r}
+set.seed(42)
+
+# Make a list of unique controls
+unique_controls <- df_CIS_fitness_controls_selection %>%
+  distinct(casenr, .keep_all = TRUE)
+
+# Initialization of an empty list to keep track of which checks have already been matched
+matched_controls <- c()
+
+# Matching 
+matched_data_stable <- df_CIS_fitness_stable_selection %>%
+  filter(education_grouped_patient %in% c("group 1", "group 2", "group 3")) %>%
+  mutate(matched_control_1 = NA, matched_control_2 = NA) %>%
+  rowwise() %>%
+  mutate(
+    matched_control_1 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    },
+    matched_control_2 = {
+      available_controls <- unique_controls[!unique_controls$casenr %in% matched_controls, ]
+      matched_control <- available_controls %>%
+        filter(sex == .env$sex, 
+               education_grouped_control == education_grouped_patient, 
+               abs(age_patient - age_control) <= .env$max_agedifference)
+      if (nrow(matched_control) > 0) {
+        matched_control <- matched_control %>%
+          slice_sample(n = 1) # Randomly select a control that meets the criteria
+        matched_controls <<- c(matched_controls, matched_control$casenr)
+        matched_control$casenr
+      } else {
+        NA
+      }
+    }
+  ) %>%
+  ungroup() %>%
+  left_join(unique_controls, by = c("matched_control_1" = "casenr")) %>%
+  left_join(unique_controls, by = c("matched_control_2" = "casenr"))
+
+# View the resulting data frame
+print(matched_data_stable)
+
+
+# Dataframe with only patients & remove duplicates for the analysis 
+df_CIS_fitness_patients_stable <- matched_data_stable %>%
+  select(casenr, CIS_fitness_reversed)
+
+# Dataframe with only controls; in 1 column
+df_CIS_fitness_controls_stable <- data.frame(
+  casenr = c(matched_data_stable$matched_control_1, matched_data_stable$matched_control_2),
+  CIS_fitness = c(matched_data_stable$CIS_fitness.x, matched_data_stable$CIS_fitness.y)
+)
+
+```
+
+## Analyse data
+```{r}
+# Check normality
+# Q-Q plot CIS_fitness.x
+qqnorm(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+qqline(df_CIS_fitness_patients_stable$CIS_fitness_reversed, col = 2)
+# Q-Q plot CIS_fitness.y
+qqnorm(df_CIS_fitness_controls_stable$CIS_fitness)
+qqline(df_CIS_fitness_controls_stable$CIS_fitness, col = 2)
+
+# Shapiro-Wilk-test CIS_fitness.x
+shapiro.test(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+# Shapiro-Wilk-test CIS_fitness.y
+shapiro.test(df_CIS_fitness_controls_stable$CIS_fitness)
+
+
+# T-test (non parametric)
+t_test_result_stable <- wilcox.test(df_CIS_fitness_patients_stable$CIS_fitness_reversed, df_CIS_fitness_controls_stable$CIS_fitness)
+print(t_test_result_stable) 
+```
+
+## Create results  
+```{r}
+# Calculating sample sizes 
+n_patients_stable <- length(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+n_controls_stable <- length(df_CIS_fitness_controls_stable$CIS_fitness)
+
+# U-value
+U_value_stable <- as.numeric(t_test_result_stable$statistic)
+
+# Calculate expected value and standard deviation of U
+E_U_stable <- (n_patients_stable * n_controls_stable) / 2
+SE_U_stable <- sqrt((n_patients_stable * n_controls_stable * (n_patients_stable + n_controls_stable + 1)) / 12)
+
+# Z-value
+Z_value_stable <- (U_value_stable - E_U_stable) / SE_U_stable
+
+# Mean
+mean_patients_stable <- mean(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+mean_controls_stable <- mean(df_CIS_fitness_controls_stable$CIS_fitness)
+
+# Median
+median_patients_stable <- median(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+median_controls_stable <- median(df_CIS_fitness_controls_stable$CIS_fitness)
+
+# SD
+sd_patients_stable <- sd(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+sd_controls_stable <- sd(df_CIS_fitness_controls_stable$CIS_fitness)
+
+# IQR's
+iqr_patients_stable <- IQR(df_CIS_fitness_patients_stable$CIS_fitness_reversed)
+iqr_controls_stable <- IQR(df_CIS_fitness_controls_stable$CIS_fitness)
+
+# Calculating the 25th, 50th (median), and 75th percentiles
+quantiles_patients_stable <- quantile(df_CIS_fitness_patients_stable$CIS_fitness_reversed, probs = c(0.25, 0.5, 0.75))
+quantiles_controls_stable <- quantile(df_CIS_fitness_controls_stable$CIS_fitness, probs = c(0.25, 0.5, 0.75))
+
+# Displaying results in a table
+result_table_stable <- data.frame(
+  Vergelijking = "CIS fitness patients vs. CIS fitness controls: stable disease",
+  U_value = U_value_stable,
+  Z_value = Z_value_stable,
+  P_value = t_test_result_stable$p.value,
+  Mean_patients = mean_patients_stable,
+  Mean_controls = mean_controls_stable,
+  Median_patients = median_patients_stable,
+  Median_controls = median_controls_stable,
+  SD_patients = sd_patients_stable,
+  SD_controls = sd_controls_stable,
+  IQR_patients = iqr_patients_stable,
+  IQR_controls = iqr_controls_stable,
+  Q25_patients = quantiles_patients_stable[1],
+  Q50_patients = quantiles_patients_stable[2], # median
+  Q75_patients = quantiles_patients_stable[3],
+  Q25_controls = quantiles_controls_stable[1],
+  Q50_controls = quantiles_controls_stable[2], # median
+  Q75_controls = quantiles_controls_stable[3]
+)
+
+print(result_table_stable)
+```
+
+## Plot data
+```{r}
+# Make a boxplot
+boxplot(df_CIS_fitness_patients_stable$CIS_fitness_reversed, df_CIS_fitness_controls_stable$CIS_fitness,
+        names = c("CIS_fitness patients during stable disease", "CIS_fitness controls"),
+        main = "Boxplot of CIS_fitness Scores",
+        ylab = "CIS_fitness Score",
+        col = c("darkgrey", "grey18"))
+
+# Add a legend 
+legend("topright", legend = c("Patients", "Controls"),
+       col = c("darkgrey", "grey18"), lty = 1, cex = 0.8)
+
+
+
+# Raincloud plot 
+# P-value with 3 decimals 
+p_value_formatted <- sprintf("%.3f", t_test_result_stable$p.value)
+# Combine the dataframes
+df_combined_stable <- rbind(data.frame(Type = "Patients", CIS_fitness = df_CIS_fitness_patients_stable$CIS_fitness_reversed),
+                            data.frame(Type = "Controls", CIS_fitness = df_CIS_fitness_controls_stable$CIS_fitness))
+
+# Set the factor Type in the desired order
+df_combined_stable$Type <- factor(df_combined_stable$Type, levels = c("Patients", "Controls"))
+
+# Create a raincloud plot
+raincloud_plot <- ggplot(df_combined_stable, aes(x = Type, y = CIS_fitness, fill = Type)) +
+  geom_half_violin(aes(x = Type, y = CIS_fitness, fill = Type), 
+                   width = 0.6, alpha = 0.6, side = "l") +  # Change to half violin
+  geom_point(position = position_jitter(width = 0.1, height = 0), alpha = 0.5) +  # Jitter only on x-axis
+  geom_boxplot(width = 0.1, outlier.shape = NA, alpha = 0.5, position = position_nudge(x = 0.2, y = 0)) +  # Nudge the boxplot right
+  scale_fill_manual(values = c("darkgrey", "grey18")) +
+  theme_minimal() +
+  labs(x = "", y = "Physical fitness") +
+  ggtitle("After primary treatment") + 
+  theme(
+    legend.position = "none",  # Remove the legend
+    axis.text.y = element_text(size = 14),  # Increase font size of y-axis labels
+    axis.text.x = element_text(size = 14),   # Increase font size of x-axis labels ("Patients" and "Controls")
+    axis.title.y = element_text(size = 16),  # Increase font size of y-axis title ("CIS20 physical fitness") 
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+  annotate("text", x = 1.5, y = max(df_combined_stable$CIS_fitness) + 1, 
+            label = paste("p =", p_value_formatted, "*"), size = 4)   
+# Show the plot
+print(raincloud_plot)
+
+```
+
+
+
+
+
+
+
+
+
+
+###### Part 2 ######
+
+##### 2.1 SF36 PF data: glioma patients at time of diagnosis vs stable disease
+# selected_pairs = patients with data at both time points; longitudinal data 
+
+## Analyze data 
+```{r}
+# Check normality
+# Q-Q plot SF36_PF.x
+qqnorm(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1])
+qqline(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1], col = 2)
+# Q-Q plot SF36_PF.y
+qqnorm(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2])
+qqline(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2], col = 2)
+
+# Shapiro-Wilk-test SF36_PF.x
+shapiro.test(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1])
+# Shapiro-Wilk-test SF36_PF.y
+shapiro.test(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2])
+
+# Paired t-test 
+resultaat_ttest <- wilcox.test(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1], selected_pairs$SF36_PF[selected_pairs$Time_moment == 2], paired = TRUE)
+
+```
+
+## Create results
+```{r}
+# Test statistic W and number of pairs n
+W <- resultaat_ttest$statistic
+n <- sum(selected_pairs$Time_moment == 1)
+
+# Correction for equal values
+differences <- selected_pairs$SF36_PF[selected_pairs$Time_moment == 1] - 
+               selected_pairs$SF36_PF[selected_pairs$Time_moment == 2]
+ranks <- rank(abs(differences))
+tie_correction <- sum((table(ranks)^3 - table(ranks))/48)
+
+# Calculate standard error (SE)
+SE <- sqrt((n * (n + 1) * (2 * n + 1) / 6) - tie_correction)
+
+# Calculate z-score
+z <- (W - (n * (n + 1) / 4)) / SE
+
+# Print results
+cat("W-value:", W, "\n")
+cat("z-score:", z, "\n")
+cat("p-value:", resultaat_ttest$p.value, "\n")
+
+# Mean values 
+mean_moment_1 <- mean(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1])
+mean_moment_2 <- mean(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2])
+
+cat("Mean SF36_PF for moment 1:", mean_moment_1, "\n")
+cat("Mean SF36_PF for moment 2:", mean_moment_2, "\n")
+
+# SD
+sd_moment_1 <- sd(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1])
+sd_moment_2 <- sd(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2])
+
+cat("SD SF36_PF for moment 1:", sd_moment_1, "\n")
+cat("SD SF36_PF for moment 2:", sd_moment_2, "\n")
+
+# Median
+median_moment_1 <- median(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1])
+median_moment_2 <- median(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2])
+
+cat("Median SF36_PF for moment 1:", median_moment_1, "\n")
+cat("Median SF36_PF for moment 2:", median_moment_2, "\n")
+
+# IQR
+quantiles_patients <- quantile(selected_pairs$SF36_PF[selected_pairs$Time_moment == 1], probs = c(0.25, 0.5, 0.75))
+quantiles_controls <- quantile(selected_pairs$SF36_PF[selected_pairs$Time_moment == 2], probs = c(0.25, 0.5, 0.75))
+
+cat("IQR moment 1:", quantiles_patients, "\n")
+cat("IQR moment 2:", quantiles_controls, "\n")
+
+```
+
+## Plot data
+```{r}
+# Boxplot
+ggplot(selected_pairs, aes(x = factor(Time_moment), y = SF36_PF, fill = factor(Time_moment))) +
+  geom_boxplot() +
+  labs(title = "Paired t-test - Boxplot",
+       x = "Time Moment",
+       y = "SF36_PF") +
+  theme_minimal() +
+  scale_fill_manual(values = c("darkgrey", "darkgrey"))  
+
+
+# Plotting lines
+ggplot(df_2, aes(x = factor(Time_moment), y = SF36_PF)) +
+  geom_point(position = position_jitter(width = 0.2), size = 3, alpha = 0.7) +
+  geom_line(aes(group = casenr), alpha = 0.3) +
+  labs(title = "SF36 Values for Time Moment 1 and 2",
+       x = "Time Moment",
+       y = "SF36_PF") +
+  theme_minimal()
+
+
+# Raincloud plot
+# Add a jittered version of the x-position to your dataset
+set.seed(123)  
+
+selected_pairs <- selected_pairs %>%
+  mutate(jittered_x = ifelse(Time_moment == "diagnosis", 
+                             as.numeric(as.factor(Time_moment)) - 0.1 + runif(n(), -0.05, 0.05), 
+                             as.numeric(as.factor(Time_moment)) + 0.1 + runif(n(), -0.05, 0.05)),
+         x_numeric = as.numeric(as.factor(Time_moment)))
+
+# Plot
+raincloud_plot <- ggplot(selected_pairs, aes(x = jittered_x, y = SF36_PF, fill = Time_moment)) +
+  geom_half_violin(data = subset(selected_pairs, Time_moment == "diagnosis"), 
+                   aes(x = x_numeric - 0.2, y = SF36_PF, fill = Time_moment), 
+                   width = 0.6, alpha = 0.6, side = "l") +  # Left half violin for "diagnosis"
+  geom_half_violin(data = subset(selected_pairs, Time_moment == "after primary treatment"), 
+                   aes(x = x_numeric + 0.2, y = SF36_PF, fill = Time_moment), 
+                   width = 0.6, alpha = 0.6, side = "r") +  # Right half violin for "after primary treatment"
+  geom_boxplot(data = subset(selected_pairs, Time_moment == "diagnosis"),
+               aes(x = x_numeric - 0.2, y = SF36_PF),
+               width = 0.1, outlier.shape = NA, alpha = 0.5, color = "black", fill = "grey30") +  # Boxplot for diagnosis
+  geom_boxplot(data = subset(selected_pairs, Time_moment == "after primary treatment"),
+               aes(x = x_numeric + 0.2, y = SF36_PF),
+               width = 0.1, outlier.shape = NA, alpha = 0.5, color = "black", fill = "grey30") +  # Boxplot for after primary treatment
+  geom_point(alpha = 0.5) +  # Points with jittered x positions
+  geom_line(aes(group = casenr), alpha = 0.3) +  # Lines with jittered x positions
+  scale_fill_manual(values = c("darkgrey", "darkgrey")) +  # Colors remain unchanged
+  scale_x_continuous(breaks = c(1, 2), labels = c("Preoperatively", "After primary treatment")) +  # Custom x-axis labels
+  theme_minimal() +
+  ylim(0, NA) +  # Ensure y-axis starts at 0
+  labs(x = "", y = "Physical functioning") +  # Remove x-axis label
+  theme(legend.position = "none", 
+        axis.text.x = element_text(size = 14),  # Font size of x-axis labels
+        axis.text.y = element_text(size = 14),  # Font size of y-axis labels
+        axis.title.y = element_text(size = 16),  # Increase font size of y-axis title ("SF36 physical functioning")
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank()) +  # Remove minor grid lines
+  annotate("text", x = 1.5, y = max(selected_pairs$SF36_PF) + 6, 
+           label = paste("p =", round(resultaat_ttest$p.value, 3)), size = 5)
+
+# Show the plot
+print(raincloud_plot)
+
+```
+
+
+
+
+
+##### 2.2 CIS20 data: glioma patients at time of diagnosis vs stable disease
+# CIS_fitness_reversed = patiets with data at both time points (CIS20); and higher scores, means better fitness
+
+## Analyze data 
+```{r}
+# Check normality
+# Q-Q plot CIS_fitness.x
+qqnorm(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1])
+qqline(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1], col = 2)
+# Q-Q plot CIS_fitness.y
+qqnorm(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2])
+qqline(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2], col = 2)
+
+# Shapiro-Wilk-test CIS_fitness.x
+shapiro.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1])
+# Shapiro-Wilk-test CIS_fitness.y
+shapiro.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2])
+
+# T-test 
+result_ttest <- wilcox.test(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1], selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2], paired = TRUE)
+```
+
+## Create results 
+```{r}
+# Test statistic W and number of pairs n
+W <- result_ttest$statistic
+n <- sum(selected_pairs$Time_moment == 1)
+
+# Correction for equal values
+differences <- selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1] - 
+               selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2]
+ranks <- rank(abs(differences))
+tie_correction <- sum((table(ranks)^3 - table(ranks))/48)
+
+# Calculate standard error (SE) 
+SE <- sqrt((n * (n + 1) * (2 * n + 1) / 6) - tie_correction)
+
+# Calculate z-score
+z <- (W - (n * (n + 1) / 4)) / SE
+
+# Print results
+cat("W-value:", W, "\n")
+cat("z-score:", z, "\n")
+cat("p-value:", resultaat_ttest$p.value, "\n")
+
+# Mean values 
+mean_moment_1 <- mean(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1])
+mean_moment_2 <- mean(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2])
+
+cat("Mean CIS_fitness for moment 1:", mean_moment_1, "\n")
+cat("Mean CIS_fitness for moment 2:", mean_moment_2, "\n")
+
+# SD
+sd_moment_1 <- sd(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1])
+sd_moment_2 <- sd(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2])
+
+cat("SD CIS_fitness for moment 1:", sd_moment_1, "\n")
+cat("SD CIS_fitness for moment 2:", sd_moment_2, "\n")
+
+# Median
+median_moment_1 <- median(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1])
+median_moment_2 <- median(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2])
+
+cat("Median CIS_fitness for moment 1:", median_moment_1, "\n")
+cat("Median CIS_fitness for moment 2:", median_moment_2, "\n")
+
+# IQR
+quantiles_patients <- quantile(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 1], probs = c(0.25, 0.5, 0.75))
+quantiles_controls <- quantile(selected_pairs$CIS_fitness_reversed[selected_pairs$Time_moment == 2], probs = c(0.25, 0.5, 0.75))
+
+cat("IQR moment 1:", quantiles_patients, "\n")
+cat("IQR moment 2:", quantiles_controls, "\n")
+```
+
+## Plot data
+```{r}
+# Boxplot
+ggplot(selected_pairs, aes(x = factor(Time_moment), y = CIS_fitness_reversed, fill = factor(Time_moment))) +
+  geom_boxplot() +
+  labs(title = "Paired t-test - Boxplot",
+       x = "Time Moment",
+       y = "CIS_fitness") +
+  theme_minimal()
+  scale_fill_manual(values = c("darkgrey", "darkgrey")) 
+
+  
+  
+# Plotting lines
+ggplot(selected_pairs, aes(x = factor(Time_moment), y = CIS_fitness_reversed)) +
+  geom_point(position = position_jitter(width = 0.2), size = 3, alpha = 0.7) +
+  geom_line(aes(group = casenr), alpha = 0.3) +
+  labs(title = "CIS_fitness Values for Time Moment 1 and 2",
+       x = "Time Moment",
+       y = "CIS_fitness") +
+  theme_minimal()
+
+
+# Raincloud 
+# Add a jittered version of the x-position to your dataset
+set.seed(123)  
+selected_pairs <- selected_pairs %>%
+  mutate(jittered_x = ifelse(Time_moment == "diagnosis", 
+                             as.numeric(as.factor(Time_moment)) - 0.1 + runif(n(), -0.05, 0.05), 
+                             as.numeric(as.factor(Time_moment)) + 0.1 + runif(n(), -0.05, 0.05)),
+         x_numeric = as.numeric(as.factor(Time_moment)))
+
+# Plot
+raincloud_plot <- ggplot(selected_pairs, aes(x = jittered_x, y = CIS_fitness_reversed, fill = Time_moment)) +
+  geom_half_violin(data = subset(selected_pairs, Time_moment == "diagnosis"), 
+                   aes(x = x_numeric - 0.2, y = CIS_fitness_reversed, fill = Time_moment), 
+                   width = 0.6, alpha = 0.6, side = "l") +  # Left half violin for "diagnosis"
+  geom_half_violin(data = subset(selected_pairs, Time_moment == "after primary treatment"), 
+                   aes(x = x_numeric + 0.2, y = CIS_fitness_reversed, fill = Time_moment), 
+                   width = 0.6, alpha = 0.6, side = "r") +  # Right half violin for "after primary treatment"
+  geom_boxplot(data = subset(selected_pairs, Time_moment == "diagnosis"),
+               aes(x = x_numeric - 0.2, y = CIS_fitness_reversed),
+               width = 0.1, outlier.shape = NA, alpha = 0.5, color = "black", fill = "grey30") +  # Boxplot for diagnosis
+  geom_boxplot(data = subset(selected_pairs, Time_moment == "after primary treatment"),
+               aes(x = x_numeric + 0.2, y = CIS_fitness_reversed),
+               width = 0.1, outlier.shape = NA, alpha = 0.5, color = "black", fill = "grey30") +  # Boxplot for after primary treatment
+  geom_point(alpha = 0.5) +  # Points with jittered x positions
+  geom_line(aes(group = casenr), alpha = 0.3) +  # Lines with jittered x positions
+  scale_fill_manual(values = c("darkgrey", "darkgrey")) +  # Colors remain unchanged
+  scale_x_continuous(breaks = c(1, 2), labels = c("Preoperatively", "After primary treatment")) +  # Custom x-axis labels
+  theme_minimal() +
+  labs(x = "", y = "Physical fitness") +  # Remove x-axis label
+  theme(legend.position = "none", 
+        axis.text.x = element_text(size = 14),  # Font size of x-axis labels
+        axis.text.y = element_text(size = 14),  # Font size of y-axis labels
+        axis.title.y = element_text(size = 16),  # Increase font size of y-axis title ("CIS20 physical fitness")
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank()) +  # Remove minor grid lines
+ annotate("text", x = 1.5, y = max(selected_pairs$CIS_fitness_reversed) + 1.5, 
+           label = paste("p =", round(resultaat_ttest$p.value, 3)), size = 5, hjust = 0.5)  
+
+# Show the plot
+print(raincloud_plot)
+
+```
+
+
