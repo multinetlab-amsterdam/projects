@@ -9,7 +9,7 @@ This script contains all statistical analyses for the project on activity and ex
 __author__ = "Christina Ulrich & Mona Zimmermann"
 __contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
 __date__ = "23/05/23"   ### Date it was created
-__status__ = "Production" 
+__status__ = "Final" 
 
 
 ####################
@@ -57,11 +57,11 @@ import seaborn as sns
 ### HCs Hemispheric FPN ###
 
 #HCs (N=25)  
-df_HC_Left = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/03_Dataframes/average_HC_Left_df.csv")
-df_HC_Right = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/03_Dataframes/average_HC_Right_df.csv")
+df_HC_Left = pd.read_csv("/path/to/average_HC_Left_df.csv")
+df_HC_Right = pd.read_csv("/path/to/average_HC_Right_df.csv")
 
 ### HC Info (i.e. info on EF scores and covariates)
-HC_info = pd.read_csv('/data/anw/anw-work/MULTINET/culrich/02_participant info/02_HC info/HC_subject_info_after_matching.csv')
+HC_info = pd.read_csv('/path/to/HC_subject_info_after_matching.csv')
 #Prepare HC_info df to match other dfs
 HC_info.rename(columns = {"Case_ID": "sub"}, inplace = True)
 HC_info['sub'] = HC_info['sub'].astype(int).astype(str)
@@ -69,13 +69,14 @@ HC_info['sub'] = HC_info['sub'].str.replace('110+', '') #edit sub_ID (remove lea
 HC_info['sub'] = HC_info['sub'].astype(int) #change sub back into int to match other dfs
 
 ### Dataframe with all HC data (left and right FPN) ###
-#HCs_std = pd.read_csv("/data/anw/anw-work/MULTINET/culrich/03_analysis/02_standardization_for_df/df_activity_standardized_HC.csv") #all regions 
+HCs_std = pd.read_csv("/path/to/df_activity_standardized_HC.csv") #all regions 
 
 #%%
 
 #%%
 ### Patient info and EF scores ###
-patient_info = pyreadstat.read_sav("/data/anw/anw-work/MULTINET/culrich/02_participant info/01_patient info/Glioomproject_multilayer_BLFU_elekta_n37_forMona_Christina_1.sav")[0]
+patient_info = pyreadstat.read_sav("/path/to/info/file/.sav")[0]
+
 patient_info['Case_ID'] = 'sub-' + patient_info['Case_ID'].astype(int).astype(str).str.zfill(4)
 # Rename colums of EF_score in patient_info file so that both CST and WFT names match"
 patient_info.rename(columns = {'flu_dier_corrected_1_zscore' : 'flu_dier_corrected_1_Zscore',
@@ -83,7 +84,7 @@ patient_info.rename(columns = {'flu_dier_corrected_1_zscore' : 'flu_dier_correct
 
 
 ### Lateralization 
-li_subs = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/01_subjects/all_subs_list.csv")
+li_subs = pd.read_csv("/path/to/all_subs_list.csv")
 #%%
 
 ####################
@@ -183,8 +184,8 @@ result_contra_bbp = paired_ttest(df_contra_combined, 'BB_welch_z', 'contralatera
 ####################
 #load in frequency specific data
 
-df_peri_baseline_freqs = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_baseline.csv')
-df_peri_FU_freqs = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_FU_all.csv')
+df_peri_baseline_freqs = pd.read_csv('/path/to/20240517_std_rel_power_baseline.csv')
+df_peri_FU_freqs = pd.read_csv('/path/to/20240517_std_rel_power_FU_all.csv')
 
 df_peri_combined_freqs = pd.merge(df_peri_baseline_freqs, df_peri_FU_freqs, on='sub', suffixes=('_T1', '_T2'))
 
@@ -332,19 +333,7 @@ def ind_ttest(df_pat, df_HCs, area, activity, lateralization):
         
         
         
-        # #append results to the results DataFrame
-        # #results_df= results_df.append({'Area': area,
-        # #                            'activity': activity, 
-        #                             'Lateralization': lateralization,
-        #                             'Test': 'Mann-Whitney U test, non-normality',
-        #                             'U-value':results[0], 
-        #                             'pvalue':results[1],
-        #                             'mean_pat':mean_pat,
-        #                             'std_pat':std_pat,
-        #                             'mean_HCs':mean_HC,
-        #                             'std_HCs':std_HC},
-        #                             ignore_index=True)
-
+    
     else: 
         print('Assumption of normality not violated: testing for unequal variances now')
        #Testing for equal variances of the two samples (with unequal sample size)
@@ -355,37 +344,12 @@ def ind_ttest(df_pat, df_HCs, area, activity, lateralization):
             results = stats.ttest_ind(a=df_pat[activity], b=df_HCs[activity], equal_var=True)
             print(results)
             
-            # #append results to the results DataFrame
-            # results_df= results_df.append({'Area': area,
-            #                                 'activity': activity, 
-            #                                 'Lateralization': lateralization,
-            #                                 'Test': 'Independent t-test, equal_var',
-            #                                 'T-value':results[0], 
-            #                                 'pvalue':results[1],
-            #                                 'mean_pat':mean_pat,
-            #                                 'std_pat':std_pat,
-            #                                 'mean_HCs':mean_HC,
-            #                                 'std_HCs':std_HC},
-            #                                 ignore_index=True)
         
         else:
             print('Samples have unequal variances, doing Welchs test')
             results = stats.ttest_ind(a=df_pat[activity], b=df_HCs[activity], equal_var=False)
             print(results)
-            # results_df = results_df.append({'Area': area,
-            #                                 'activity': activity, 
-            #                                 'Lateralization': lateralization,
-            #                                 'Test': 'Independent t-test, unequal_var',
-            #                                 'T-value':results[0], 
-            #                                 'pvalue':results[1],
-            #                                 'mean_pat':mean_pat,
-            #                                 'std_pat':std_pat,
-            #                                 'mean_HCs':mean_HC,
-            #                                 'std_HCs':std_HC},
-            #                                 ignore_index=True)
-        
-   
-   
+            
   
         
 
@@ -397,6 +361,7 @@ def ind_ttest(df_pat, df_HCs, area, activity, lateralization):
 test_activity(df_ipsi_averaged, df_HC_Left, df_HC_Right, li_subs,  'ipsilateral',  'offset_z', 'baseline')  
 test_activity(df_contra_averaged, df_HC_Left, df_HC_Right, li_subs,  'contralateral',  'offset_z', 'baseline') 
 
+#%%
 #FU
 test_activity(df_ipsi_averaged_FU, df_HC_Left, df_HC_Right, li_subs,  'ipsilateral',  'offset_z', 'FU')  
 test_activity(df_contra_averaged_FU, df_HC_Left, df_HC_Right, li_subs,  'contralateral',  'offset_z', 'FU') 
@@ -444,12 +409,14 @@ def run_multiple_linear_regression(df_activity, df_ef, EF_Score, area, output_di
               
         # Merge the two dataframes based on sub_ID
         merge_df = pd.merge(df_activity, df_ef, left_on='sub', right_on='Case_ID')
-        print(merge_df)    
+        print(merge_df.shape)
+        print(len(np.unique(merge_df["sub"])))
+        assert all(merge_df["sub"] == merge_df["Case_ID"])
 
              
-        #In case EF_Score = CST is analzyed --> remove sub-9038 and sub-0087 from DF
+        #In case EF_Score = CST is analzyed --> remove sub-xxx and sub-xxx from DF
         if EF_Score == "cstc_corrected_1_Zscore":
-            merge_df.drop(merge_df[(merge_df["sub"] == "sub-9038")|(merge_df["sub"] == "sub-0087")].index, inplace = True)
+            merge_df.drop(merge_df[(merge_df["sub"] == "sub-xxx")|(merge_df["sub"] == "sub-0087")].index, inplace = True)
             merge_df.reset_index(inplace = True)
             
             #Check to see if correct participant was excluded
@@ -554,7 +521,7 @@ def run_multiple_linear_regression(df_activity, df_ef, EF_Score, area, output_di
         
         #5) Residual Normality 
         print("5) Testing Residual Normality: See Graph")
-        #sns.distplot(residuals).set(title ="Residual plot: Testing Normality")
+        sns.distplot(residuals).set(title ="Residual plot: Testing Normality")
         
         print('residual mean:')
         print(np.mean(residuals))
@@ -610,50 +577,58 @@ def run_multiple_linear_regression(df_activity, df_ef, EF_Score, area, output_di
       #Append results to the dataframe
         li.append(summary_df)
                 
-    results_df = pd.concat(li, axis=0) #indent seems not to matter ? (22-05-24)
+    results_df = pd.concat(li, axis=0) 
 
     
     # Save the dataframe to CSV
-    results_df.to_csv(f'{output_dir}linear_regression_baseline_{area}_{EF_Score}.csv')
+    #results_df.to_csv(f'{output_dir}linear_regression_baseline_{area}_{EF_Score}_20250701.csv')
     #return(results_df)
 #%%
 
 ###############################
 ### Patient linear regression_baseline analysis ### 
 ###############################
-    output_dir = '/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results/'
+    output_dir = '/path/to/outputdir/'
          
 #Peritumoral
     #CST
-    run_multiple_linear_regression(df_peri_averaged, patient_info, 'cstc_corrected_1_Zscore', 'peritumoral', output_dir, covariates=["Dummy_location_frontal_or_not", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])#,"epilepsy_dich.1"])
-    #2023-06-28 MZ: epilepsy_dich taken out due to multicollinearity (VIF >0.5)
+
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_multiple_linear_regression(df_peri_averaged, patient_info, 'cstc_corrected_1_Zscore', 'peritumoral', output_dir, covariates=["Dummy_frontal_or_not_20250627_final", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted',"epilepsy_dich.1"])
+
 #%%
-    #WFT
-    run_multiple_linear_regression(df_peri_averaged, patient_info, 'flu_dier_corrected_1_Zscore', 'peritumoral', output_dir, covariates=["Dummy_location_frontal_or_not", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])
-   
+    output_dir = '/path/to/outputdir'
+
+    #WFT   
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_multiple_linear_regression(df_peri_averaged, patient_info, 'flu_dier_corrected_1_Zscore', 'peritumoral', output_dir, covariates=["Dummy_frontal_or_not_20250627_final", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])
 
 #%%                                    
 #Ipsilateral FPN
     #CST
-    run_multiple_linear_regression(df_ipsi_averaged, patient_info, 'cstc_corrected_1_Zscore', 'ipsilateral', output_dir, covariates =["Dummy_location_frontal_or_not", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])#, "epilepsy_dich.1"])
-    #2023-06-28 MZ: epilepsy_dich taken out due to multicollinearity (VIF >0.5)
+    
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_multiple_linear_regression(df_ipsi_averaged, patient_info, 'cstc_corrected_1_Zscore', 'ipsilateral', output_dir, covariates =["Dummy_frontal_or_not_20250627_final", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted', "epilepsy_dich.1"])
+
 #%%
     
     #WFT
-    run_multiple_linear_regression(df_ipsi_averaged, patient_info, 'flu_dier_corrected_1_Zscore', 'ipsilateral', output_dir, covariates=["Dummy_location_frontal_or_not", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])
+   
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_multiple_linear_regression(df_ipsi_averaged, patient_info, 'flu_dier_corrected_1_Zscore', 'ipsilateral', output_dir, covariates=["Dummy_frontal_or_not_20250627_final", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])
 #%%                                              
 #Contralateral FPN
     #CST#
-    run_multiple_linear_regression(df_contra_averaged, patient_info, 'cstc_corrected_1_Zscore', 'contralateral', output_dir, covariates=["Dummy_location_frontal_or_not", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])#, "epilepsy_dich.1"])
-    #2023-06-28 MZ: epilepsy_dich taken out due to multicollinearity (VIF >0.5)
+
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_multiple_linear_regression(df_contra_averaged, patient_info, 'cstc_corrected_1_Zscore', 'contralateral', output_dir, covariates=["Dummy_frontal_or_not_20250627_final", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted', "epilepsy_dich.1"])
 
 #%%
-
     #WFT
-    run_multiple_linear_regression(df_contra_averaged, patient_info, 'flu_dier_corrected_1_Zscore', 'contralateral', output_dir, covariates=["Dummy_location_frontal_or_not", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])
 
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_multiple_linear_regression(df_contra_averaged, patient_info, 'flu_dier_corrected_1_Zscore', 'contralateral', output_dir, covariates=["Dummy_frontal_or_not_20250627_final", 'Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted'])
 
-    
 #%%
 ####################   
 ### 2) to test relationship Activity vs EF (longitudinally) ###
@@ -682,22 +657,26 @@ def run_delta_regression(df_activity, df_ef, EF_Score, area, output_dir, covaria
     for activity_metrics in ["BB_welch_z", "offset_z"]: 
         
         # Merge the two dataframes based on sub_ID
-        merge_df_org = pd.merge(df_activity, df_ef, left_on='sub', right_on='Case_ID')
+        
         merge_df = pd.merge(df_activity, df_ef, left_on='sub', right_on='Case_ID')
+        print(merge_df.shape)
+        print(len(np.unique(merge_df["sub"])))
+        print(len(np.unique(merge_df["Case_ID"])))
+        
 
-        #In case EF_Score = CST is analzyed --> remove sub-9038 and sub-0087 from DF
+        #In case EF_Score = CST is analzyed --> remove sub-xxx and sub-xxx from DF
         if EF_Score == "cstc_corrected":
-            merge_df.drop(merge_df[(merge_df["sub"] == "sub-9038")|(merge_df["sub"] == "sub-0087")].index, inplace = True)
+            merge_df.drop(merge_df[(merge_df["sub"] == "sub-xxx")|(merge_df["sub"] == "sub-xxx")].index, inplace = True)
             merge_df.reset_index(inplace = True)
             #Check to see if correct participant was excluded
             print(merge_df["sub"])   
             print(merge_df["Case_ID"])
             
             
-        #In case EF_Score = WFT is analyzed --> remove sub-9031 from DF
+        #In case EF_Score = WFT is analyzed --> remove sub-xxx from DF
         else:
             #Check to see if correct participant are still included for WFT
-            merge_df.drop(merge_df[(merge_df["sub"] == "sub-9031")].index, inplace = True)
+            merge_df.drop(merge_df[(merge_df["sub"] == "sub-xxx")].index, inplace = True)
             merge_df.reset_index(inplace = True)
             #Check to see if correct participant was excluded
             print(merge_df["sub"])   
@@ -719,7 +698,7 @@ def run_delta_regression(df_activity, df_ef, EF_Score, area, output_dir, covaria
         merge_df[f'delta_{activity_metrics}'] = merge_df[activity_metrics + '_T2'] - merge_df[activity_metrics + '_T1']
       
         merge_df[f'delta_{EF_Score}']= merge_df[EF_Score + "_2_Zscore"] - merge_df[EF_Score + "_1_Zscore"]
-       
+        print(merge_df[f'delta_{EF_Score}'])
        
     
         # Define the dependent variable (outcome) and independent variables
@@ -849,7 +828,7 @@ def run_delta_regression(df_activity, df_ef, EF_Score, area, output_dir, covaria
         
 
     # Save the dataframe to CSV
-    results_delta_df.to_csv(f'{output_dir}/linear_regression_delta_scores_{area}_{EF_Score}.csv')
+    results_delta_df.to_csv(f'{output_dir}/linear_regression_delta_scores_{area}_{EF_Score}_20250701.csv')
     #return(results_delta_df)
     
 
@@ -857,33 +836,40 @@ def run_delta_regression(df_activity, df_ef, EF_Score, area, output_dir, covaria
 ###############################
 ### Patient linear regression_delta_scores analysis ### 
 ###############################
-    output_dir = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/04_results"
+    output_dir = "/path/to/outputdir/"
          
 #Peritumoral
     #CST
-    run_delta_regression(df_peri_combined, patient_info, 'cstc_corrected', 'peritumoral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted',"Dummy_CT_during_FU"])
-    #2023-06-28 MZ: Covariate "Interval_surgery_NPA" taken out after multicollinearity
-#%%
-
-    #WFT
-    run_delta_regression(df_peri_combined, patient_info, 'flu_dier_corrected', 'peritumoral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted','Dummy_RT', 'Dummy_RTandXT'])
+    run_delta_regression(df_peri_combined, patient_info, 'cstc_corrected', 'peritumoral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted',"Dummy_CT_during_FU", "Interval_surgery_NPA"])
     
-#%%                                
+#%%
+    #WFT    
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_delta_regression(df_peri_combined, patient_info, 'flu_dier_corrected', 'peritumoral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted','Syntax_dummy_only_RTH', 'Syntax_dummy_RTHandXT'])
+
+#%%                  
+    output_dir = "/path/to/output_dir/"
+              
 #Ipsilateral FPN
     #CST
     run_delta_regression(df_ipsi_combined, patient_info, 'cstc_corrected', 'ipsilateral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted',"Dummy_CT_during_FU", "Interval_surgery_NPA"])
   
 #%%    
-  #WFT
-    run_delta_regression(df_ipsi_combined, patient_info, 'flu_dier_corrected', 'ipsilateral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted','Dummy_RT', 'Dummy_RTandXT'])
+  #WFT    
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_delta_regression(df_ipsi_combined, patient_info, 'flu_dier_corrected', 'ipsilateral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted','Syntax_dummy_only_RTH', 'Syntax_dummy_RTHandXT'])
+
 #%%                                                
 #Contralateral FPN
+    output_dir = "/path/to/outputdir/"
+
     #CST
     run_delta_regression(df_contra_combined, patient_info, 'cstc_corrected', 'contralateral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted',"Dummy_CT_during_FU", "Interval_surgery_NPA"])
-        #Interval_Surgery_MEG taken out due to multicolinearity# NOT when redid analysis (28-06-23)!
 #%%        
         #WFT
-    run_delta_regression(df_contra_combined, patient_info, 'flu_dier_corrected', 'contralateral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted','Dummy_RT', 'Dummy_RTandXT'])
+    #rerun 01-07-2025 with improved covariate frontal or not (no variables taken out for multicollinearity)
+    run_delta_regression(df_contra_combined, patient_info, 'flu_dier_corrected', 'contralateral', output_dir, covariates=['Dummy_IDH_WT', 'Dummy_IDHmut_noncodeleted','Syntax_dummy_only_RTH', 'Syntax_dummy_RTHandXT'])
+
 
 #%%          
 ####################
@@ -1034,7 +1020,7 @@ def run_HC_linear_regression(df_activity, df_ef, EF_Score, area, output_dir, cov
 ###############################
 ### HC linear regression_baseline analysis ### 
 ###############################
-output_dir = '/data/anw/anw-work/MULTINET/culrich/03_analysis/04_Output_Statistics/04_HC_Linear_Regression'
+output_dir = '/path/to/output_dir/'
          
 #Left Hemisphere FPN
     #CST

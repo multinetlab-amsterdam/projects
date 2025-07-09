@@ -13,7 +13,7 @@ baseline and follow-up relative power in the different frequency bands.
 __author__ = "Mona Zimmermann"
 __contact__ = "m.l.m.zimmermann@amsterdamumc.nl" 
 __date__ = "23/06/24"  
-__status__ = "Production" 
+__status__ = "Final" 
 
 
 ####################
@@ -94,20 +94,12 @@ def make_rel_power_df(df_pat, df_HC, df_overlaps, sub_ids, freq, MM):
     return(df_peri_mean)
 
 #%%
-#sub_ids = ['sub-0017','sub-0029', 'sub-0045', 'sub-0050', 'sub-0054', 'sub-0066', 'sub-0068','sub-0069', 'sub-0077', 'sub-0083', 'sub-0085', 'sub-0086', 'sub-0087', 'sub-0094', 'sub-0099', 'sub-0100', 'sub-0106', 'sub-0115', 'sub-9005','sub-9007', 'sub-9009', 'sub-9010', 'sub-9012', 'sub-9014', 'sub-9018','sub-9022', 'sub-9029', 'sub-9030', 'sub-9031', 'sub-9032', 'sub-9034','sub-9036', 'sub-9038', 'sub-9040', 'sub-9045', 'sub-9083']
-#MM = 'baseline'
 
-#sub_ids = ['sub-0017','sub-0029', 'sub-0045', 'sub-0050', 'sub-0054', 'sub-0066', 'sub-0068','sub-0069', 'sub-0077', 'sub-0083', 'sub-0085', 'sub-0086', 'sub-0087', 'sub-0094', 'sub-0099']
-#MM = 'T2'
-
-#sub_ids = ['sub-0100','sub-0106', 'sub-0115', 'sub-9005', 'sub-9007', 'sub-9009', 'sub-9012', 'sub-9014', 'sub-9018','sub-9022', 'sub-9029', 'sub-9030', 'sub-9031', 'sub-9032', 'sub-9034','sub-9036', 'sub-9038', 'sub-9040', 'sub-9045', 'sub-9083']
-#MM = 'T3'
-
-sub_ids = ['sub-9010']
+sub_ids = ['sub-xxx', 'sub-xxx', ... ]
 MM = 'T4'
 
 #DEFINE INPUTS
-df_overlaps = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/peri_overlaps.csv')
+df_overlaps = pd.read_csv('/path/to/peri_overlaps.csv')
 df_overlaps = df_overlaps.loc[df_overlaps['sub'].isin(sub_ids)] #only include the subjects that want to include for the timepoint
 print(df_overlaps.shape) 
 freq_bands = ['alpha1', 'alpha2', 'beta', 'delta', 'gamma', 'theta']
@@ -119,13 +111,13 @@ for freq in freq_bands:
     print(freq)
     
     #load in dataframes
-    df_pat = pd.read_csv(f'/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240515_avg_rel_power_{freq}_{MM}.csv', header= None)
+    df_pat = pd.read_csv(f'/path/to/20240515_avg_rel_power_{freq}_{MM}.csv', header= None)
     
     #special case T4 -->dataframe is stored in different orientation when run or only one subject (1x210 instead of 210x1)
     #df_pat = df_pat.T
     
     
-    df_HC = pd.read_csv(f'/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240516_avg_rel_power_{freq}_HC.csv', header= None)
+    df_HC = pd.read_csv(f'/path/to/20240516_avg_rel_power_{freq}_HC.csv', header= None)
     print(df_pat.shape)
 
     #standardize and calculate peritumoral value 
@@ -144,23 +136,21 @@ df_all = all_dfs[0]
 for df in all_dfs[1:]:
     df_all = pd.merge(df_all, df, on='sub', how='inner')
 
-#df_all.to_csv(f'/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_{MM}.csv')
 
 #%%
 
 #Load in all standardized rel power peritumoral dataframes for baseline and the FUs
 
 ### Baseline
-df_peri_baseline = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_baseline.csv')
+df_peri_baseline = pd.read_csv('/path/to/20240517_std_rel_power_baseline.csv')
 
 ### FUs
-df_peri_T2 = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_T2.csv')
-df_peri_T3 = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_T3.csv')
-df_peri_T4 = pd.read_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_T4.csv')
+df_peri_T2 = pd.read_csv('/path/to/20240517_std_rel_power_T2.csv')
+df_peri_T3 = pd.read_csv('/path/to/20240517_std_rel_power_T3.csv')
+df_peri_T4 = pd.read_csv('/path/to/20240517_std_rel_power_T4.csv')
 
 #concatenate to get one FU dataframe
 df_peri_FU = pd.concat([df_peri_T2, df_peri_T3, df_peri_T4], axis = 0)
-df_peri_FU.to_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_FU_all.csv')
 
 #%%
 ### Prepare df for Plotting ### 
@@ -169,5 +159,4 @@ df_peri_baseline['MM'] = 'Baseline'
 df_peri_FU['MM'] = 'FU'
 
 df_both_timepoints = pd.concat([df_peri_baseline, df_peri_FU], axis = 0)
-df_both_timepoints.to_csv('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2023_activity_EF/02_analysis/03_dataframes/20240517_std_rel_power_both_timepoints.csv')
     

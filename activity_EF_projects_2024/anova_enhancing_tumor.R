@@ -25,8 +25,8 @@ library(MASS)
 
 
 ##### ----- Data preparation ----- #####
-file_path_enhancing_tumor <- 'M:\\MULTINET\\GOALS2\\06_projecten\\2023_activity_EF\\04_analysis\\03_dataframes\\20240221_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv'
-file_path_enhancing_tumor_epilepsy <- 'M:\\MULTINET\\GOALS2\\06_projecten\\2023_activity_EF\\04_analysis\\03_dataframes\\20240221_dataframe_enhancing_tumor_baseline_FU_long_format_epilepsy_filtered.csv'
+file_path_enhancing_tumor <- 'M:\\path\\to\\20240221_dataframe_enhancing_tumor_baseline_FU_long_format_progression_epilepsy_mol.csv'
+file_path_enhancing_tumor_epilepsy <- 'M:\\path\\to\\20240221_dataframe_enhancing_tumor_baseline_FU_long_format_epilepsy_filtered.csv'
 
 df_enhancing_tumor <- read_csv(file_path_enhancing_tumor)
 df_epilepsy <- read_csv(file_path_enhancing_tumor_epilepsy)
@@ -93,7 +93,6 @@ res_aov_BB <- anova_test(data = df_enhancing_tumor, dv = 'BB_welch_z', wid = 'su
 get_anova_table(res_aov_BB)
 
 df_res_aov_BB <- data.frame(res_aov_BB)
-write.csv2(df_res_aov_BB, 'M:\\MULTINET\\GOALS2\\06_projecten\\2023_activity_EF\\03_analysis\\01_results\\20240221_anova_BB_enhancing_tumor_non_transformed.csv', row.names = TRUE)
 
 #Epilepsy
 #simple implementation
@@ -101,7 +100,6 @@ res_aov_BB_epilepsy <- anova_test(data = df_epilepsy, dv = 'BB_welch_z', wid = '
 get_anova_table(res_aov_BB_epilepsy)
 
 df_res_aov_BB_epilepsy <- data.frame(res_aov_BB_epilepsy)
-write.csv2(df_res_aov_BB_epilepsy, 'M:\\MULTINET\\GOALS2\\06_projecten\\2023_activity_EF\\03_analysis\\01_results\\20240327_anova_BB_enhancing_tumor_non_transformed_epilepsy.csv', row.names = TRUE)
 
 
 #Offset_z
@@ -110,7 +108,6 @@ res_aov_offset <- anova_test(data = df_enhancing_tumor, dv = 'offset_z', wid = '
 get_anova_table(res_aov_offset)
 
 df_res_aov_offset <- data.frame(res_aov_offset)
-write.csv2(df_res_aov_offset, 'M:\\MULTINET\\GOALS2\\06_projecten\\2023_activity_EF\\03_analysis\\01_results\\20240221_anova_offset_enhancing_tumor_non_transformed.csv', row.names = TRUE)
 
 #Epilepsy
 #simple implementation
@@ -118,6 +115,5 @@ res_aov_offset_epilepsy <- anova_test(data = df_epilepsy, dv = 'offset_z', wid =
 get_anova_table(res_aov_offset_epilepsy)
 
 df_res_aov_offset_epilepsy <- data.frame(res_aov_offset_epilepsy)
-write.csv2(df_res_aov_offset_epilepsy, 'M:\\MULTINET\\GOALS2\\06_projecten\\2023_activity_EF\\03_analysis\\01_results\\20240221_anova_offset_enhancing_tumor_non_transformed_epilepsy.csv', row.names = TRUE)
 
 
