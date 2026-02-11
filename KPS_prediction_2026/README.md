@@ -19,7 +19,7 @@ The input features are the following: clinical, radiomics, and tumor volumetrics
 
 2) **Radiomics:** First, the [PICTURE toolbox](https://gitlab.com/picture-production/picture-qni-robust-glioma-segmentation) was used to obtain the tumor masks. Second, the [GSI-RADS toolbox](https://github.com/SINTEFMedtek/GSI-RADS) was used to obtain the automatic reports of these tumor masks which contain quantifiable tumor related metrics.
 
-3) **Tumor volumetrics:** the tumor mask as obtained by the PICTURE toolbox produced 3 tumor components: necrotic core, enhancing component, and T2 hyperintensity. Then, a bespoke script was used to calculate the volumes of each of these components in the MNI space (`06_tumor_volume_components.py`).
+3) **Tumor volumetrics:** the tumor mask produced 3 tumor components: necrotic core, enhancing component, and T2 hyperintensity. Then, a bespoke script was used to calculate the volumes of each of these components in the MNI space (`06_tumor_volume_components.py`).
 
 ## Repository structure
 ```
