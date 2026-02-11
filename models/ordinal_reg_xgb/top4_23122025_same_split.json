@@ -1,0 +1,46 @@
+{
+  "param_space": {
+    "max_depth": [
+      3,
+      7
+    ],
+    "learning_rate": [
+      0.01,
+      0.2,
+      "log-uniform"
+    ],
+    "n_estimators": [
+      100,
+      600
+    ],
+    "reg_alpha": [
+      0,
+      10
+    ],
+    "reg_lambda": [
+      0,
+      10
+    ],
+    "min_child_weight": [
+      1,
+      20
+    ],
+    "class1_scale": [
+      0.95,
+      1,
+      1.2,
+      1.5
+    ]
+  },
+  "feature_set_name": "top4",
+  "features": [
+    "Age at resection",
+    "Enhancing component volume",
+    "Preoperative KPS",
+    "Cognitive networks overlap"
+  ],
+  "n_outer_folds": 10,
+  "n_iter": 150,
+  "timestamp": "2025-12-23T14:35:09.229057Z",
+  "scoring": "roc_auc_ovr_weighted"
+}
