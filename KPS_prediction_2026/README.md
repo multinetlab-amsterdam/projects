@@ -5,17 +5,20 @@ This is the official code repository for the paper: **Predicting long-term posto
 
 **DOI:** TBD
 
-**Graphical abstract**
+**Open-source app:** [App](https://glioma-kps-prediction.streamlit.app/)
 
-<img width="540" height="488" alt="image" src="https://github.com/user-attachments/assets/3ade13f4-1184-42b3-86b3-543ba9c34937" />
+
+**Graphical abstract:**
+
+<p align="center">
+  <img width="540" height="488" alt="image" src="https://github.com/user-attachments/assets/3ade13f4-1184-42b3-86b3-543ba9c34937" />
+</p>
 
 ## Project overview
 This project predicts the long-term postoperative Karnofsky performance score (KPS) using only preoperative data. It uses a population of patients with contrast-enhancing glioma undergoing resection for the first time. The model predicts a three level outcome at 12 months postoperative:
 
       1) mortality (KPS = 0)
-      
       2) functional dependence (KPS = 10 - 60)
-      
       3) functional independence (KPS = 70 - 100)
 
 The input features are the following: clinical, radiomics, and tumor volumetrics features. The following toolboxes were used in the project:
@@ -41,20 +44,23 @@ The input features are the following: clinical, radiomics, and tumor volumetrics
 **Note:** For patient privacy reasons, the folders `subj_ids/`, `data/raw/`, and `data/processed/` are excluded from this repository.
 
 ## Dependencies
-This project uses two YAML configuration files:
-preprocessing_env.yaml: dependencies required for running scripts located in /src_preprocessing
-modeling_env.yaml: dependencies required for running scripts located in /src_modeling
-Both files must be present before running the code.
+This project uses two YAML configuration files: 
+
+`preprocessing_env.yaml`: dependencies required for running scripts in `/src_preprocessing`
+
+`modeling_env.yaml`: dependencies required for running scripts in `/src_modeling`
 
 To create a virtual environment that provides reproducible results, run the following:
-conda env create -f preprocessing_env.yaml
-conda activate preprocessing_env
+
+`conda env create -f preprocessing_env.yaml`
+
+`conda activate preprocessing_env`
 
 ## How to run
 1. Setup virtual environments
 2. /src_preprocessing: follow script order --> interim files stored in /data/processed and /subjs_ids
 3. /src_modeling: follow script order
-4. final model results: models/ordinal_reg_xgb/ or models/mcp
+4. final model results: stored in models/ordinal_reg_xgb/ or models/mcp
 
 ## Citations / licenses
 CC BY 4.0: Anyone can use, modify, redistribute, but must give credit.
