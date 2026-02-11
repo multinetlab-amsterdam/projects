@@ -29,10 +29,10 @@ output_dir = Path('/folder/data/processed/gsi_reports')
 gsi_reports = pd.read_csv(reports_path)
 overlap = pd.read_csv(overlap_subjs_path)
 
-#manually add IM1220 because of a re-ran gsi-rads after corrected resection date
-gsi_IM1220 = pd.read_csv('/IM1220/report.csv')
-gsi_IM1220.insert(0, 'subject_id', 'IM1220')
-gsi_reports = pd.concat([gsi_reports, gsi_IM1220], ignore_index=True)
+#manually add XXX because of a re-ran gsi-rads after corrected resection date
+gsi_IM1220 = pd.read_csv('/XXX/report.csv')
+gsi_IM1220.insert(0, 'subject_id', 'XXX')
+gsi_reports = pd.concat([gsi_reports, gsi_XXX], ignore_index=True)
 
 #index
 gsi_report_overlap = gsi_reports[gsi_reports['subject_id'].isin(overlap['IMAGO_ID'])]
