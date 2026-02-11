@@ -3,19 +3,13 @@ This is the official code repository for the paper: **Predicting long-term posto
 
 **Preregistration:** [View on OSF](https://osf.io/f29xm/overview)
 
-**DOI:** TBD
-
 **Open-source app:** [App](https://glioma-kps-prediction.streamlit.app/)
 
+**DOI:** TBD
 
-**Graphical abstract:**
-
-<p align="center">
-  <img width="540" height="488" alt="image" src="https://github.com/user-attachments/assets/3ade13f4-1184-42b3-86b3-543ba9c34937" />
-</p>
 
 ## Project overview
-This project predicts the long-term postoperative Karnofsky performance score (KPS) using only preoperative data. It uses a population of patients with contrast-enhancing glioma undergoing resection for the first time. The model predicts a three level outcome at 12 months postoperative:
+This project develops a model to predict the long-term postoperative Karnofsky performance score (KPS) using only preoperative data. It uses a population of patients with contrast-enhancing glioma undergoing resection for the first time. The model predicts a three level outcome at 12 months postoperatively:
 
       1) mortality (KPS = 0)
       2) functional dependence (KPS = 10 - 60)
@@ -41,7 +35,7 @@ The input features are the following: clinical, radiomics, and tumor volumetrics
 └── subj_ids/             # Subject IDs, excluded subjects, train/test split information
 ```
 
-**Note:** For patient privacy reasons, the folders `subj_ids/`, `data/raw/`, and `data/processed/` are excluded from this repository.
+**Note:** For patient privacy reasons, the folders `subj_ids/`, `models/`, `data/raw/`, `data/processed/` are excluded from this repository.
 
 ## Dependencies
 This project uses two YAML configuration files: 
