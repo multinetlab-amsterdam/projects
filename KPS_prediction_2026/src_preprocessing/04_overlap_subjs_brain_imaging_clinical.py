@@ -77,10 +77,7 @@ unique_brain = unique_brain.drop_duplicates(subset='subj_id', keep='first')
 unique_set = set(unique_brain['subj_id'])
 brain_outsiders = brain_only - unique_set
 
-# they were excluded offline in excel sheets for the following reasons:
-# 	P0159 - Already had biopsy + treatment before resection
-# 	N0117 - age at surgery below 18y
-# 	P0174 - 1st resection was another date, 2018 (ipv 2019) in Leiden; no presurgical KPS available
+# they were excluded offline in excel sheets for reasons documented elsewhere (protected due to patient sensitive data).
 
 #%% ### investigate the ones outside the overlap for subjs unique to clinical
 
@@ -91,9 +88,6 @@ overlap_clinical_non_enh = clinical_only & set(non_enh_subjs['PRECOG_ID']) # N =
 unique_clinical_brain_reasons = convert_exclusion_dict(excluded_brain, clinical_only) # N = 14
 unique_set = set(unique_clinical_brain_reasons['subj_id'])
 
-# what about the rest 1?
-clinical_outsiders = clinical_only - (overlap_clinical_non_enh | unique_set)
-# MU9361 (IM1328)
 
 #%% ## save
 overlap_df = pd.DataFrame(overlap, columns=['PRECOG_ID'])
