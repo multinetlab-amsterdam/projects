@@ -34,11 +34,11 @@ output_dir = Path("/folder/data/processed/volume_components")
 #Load
 subj_ids = pd.read_csv(overlap_subjs_path)
 vol_components = pd.read_csv(volume_components_path)
-#%% #### add subject IM1220
+#%% #### add subject XXX
 # not in the initial pool of subjects because of a wrong resection date
 
 unique_subj = subj_ids[~subj_ids['PRECOG_ID'].isin(vol_components['PRECOG_ID'])]
-# the extra is DB0156 (precog_id) or IM1220 (imago_id) - we need to add this one manually because initially the wrong resection date was used
+# the extra is XXX  - we need to add this one manually because initially the wrong resection date was used
 
 # make it nice and appendable to the main df
 subject_id = unique_subj['PRECOG_ID']
@@ -46,8 +46,8 @@ subject_id = subject_id.iloc[0] if hasattr(subject_id, "iloc") else subject_id
 sub = str(subject_id)
 
 # retrieve the segmentation
-subj_IM1220_path = Path('/IM1220/registration/input_segmentation_to_MNI.nii.gz')
-img = nib.load(subj_IM1220_path)
+subj_IM1220_path = Path('/XXX/registration/input_segmentation_to_MNI.nii.gz')
+img = nib.load(subj_XXX_path)
 data = img.get_fdata()
 voxel_size = np.prod(img.header.get_zooms()[:3])  # voxel volume (mm³)
 
@@ -67,15 +67,15 @@ for label in unique_labels:
 row_df = pd.DataFrame([volume_dict])
 vol_components = pd.concat([vol_components, row_df], ignore_index=True)
 
-#%% ### P0267 - different segmentation mask
+#%% ### YYY - different segmentation mask
 # the enhancing part is much smaller in the corrected version than in the initial volume mask
 
-# correct the volume components of IM0321 (P0267) to include the corrected segmentation file
-print(f"initial calculation of P0267: {vol_components[vol_components['PRECOG_ID'] == 'P0267']}")
+# correct the volume components of YYY to include the corrected segmentation file
+print(f"initial calculation of YYY: {vol_components[vol_components['PRECOG_ID'] == 'YYY']}")
 # MNI
-corrected_P0267_ath = Path('/IM0321/corrected_tumor_mask/input_segmentation_to_MNI_IM0321.nii.gz')
+corrected_YYY_path = Path('/YYY/corrected_tumor_mask/input_segmentation_to_MNI_YYY.nii.gz')
 
-sub = 'P0267'
+sub = 'YYY'
 img = nib.load(corrected_P0267_ath)
 data = img.get_fdata()
 voxel_size = np.prod(img.header.get_zooms()[:3])  # voxel volume (mm³)
@@ -94,11 +94,11 @@ for label in unique_labels:
 
 # convert to DataFrame
 row_df = pd.DataFrame([volume_dict])
-# drop the old P0267 row
+# drop the old YYY row
 vol_components = vol_components[vol_components["PRECOG_ID"] != sub]
 # append the new one
 vol_components = pd.concat([vol_components, row_df], ignore_index=True)
-print(f"calculation of P0267 after correction: {vol_components[vol_components['PRECOG_ID'] == 'P0267']}")
+print(f"calculation of YYY after correction: {vol_components[vol_components['PRECOG_ID'] == 'YYY']}")
 
 #%% Rename labels into actual components
 
