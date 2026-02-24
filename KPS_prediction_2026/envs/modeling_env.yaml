@@ -1,0 +1,19 @@
+name: modeling_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pandas=2.2.3
+  - numpy=1.23.5
+  - scikit-learn=1.2.2
+  - xgboost==2.1.4
+  - seaborn=0.13.2
+  - pip
+  - pip:
+      - lifelines==0.27.8
+      - scikit-optimize==0.9.0
+      - scikit-survival==0.23.1
+      - xgbordinal
+      - imbalanced-learn==0.10.1
+      - shap==0.49.1
