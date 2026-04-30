@@ -1,3 +1,15 @@
+---
+title: "Mixed ANOVAS"
+author: "Mona Zimmermann"
+date: "2026/04/30"
+---
+
+#### Email: m.l.m.zimmermann@amsterdamumc.nl
+#### Purpose of script:
+Running a type 3 mixed ANOVA. 
+#### Status:
+
+
 #### Load libraries
 library(tidyverse) 
 library(ggpubr)
@@ -45,7 +57,7 @@ bartlett.test(mean_BBP_z ~ split_tumor_activity_factor, data = df)
 
 
 
-### PATNET as between subject factor
+### PATNET as between-subject factor
 res_aov_type_3<- anova_test(data = df, dv = 'mean_BBP_z', wid = 'sub', within = 'tumor_conn_binary_factor', between = 'median_split_PATNET_factor', type=3)
 get_anova_table(res_aov_type_3)
 
