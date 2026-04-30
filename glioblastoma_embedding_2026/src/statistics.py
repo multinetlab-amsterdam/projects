@@ -11,7 +11,7 @@ Functions used for the statistical analysis.
 __author__ = "Mona Zimmermann"
 __contact__ = "m.l.m.zimmermann@amsterdamumc.nl"
 __date__ = "28-10-2025"   ### Date it was created
-__status__ = "Production" ### Production = still being developed. Else: Concluded/Finished.
+__status__ = "Finished" ### Production = still being developed. Else: Concluded/Finished.
 
 #Created with the help of chatgpt
 
@@ -19,7 +19,7 @@ __status__ = "Production" ### Production = still being developed. Else: Conclude
 # Review History   #
 ####################
 
-# Reviewed by Name Date ### 
+# Reviewed by Sebastien Dam, 22-04-2026 ### 
 
 ####################
 # Libraries        #
