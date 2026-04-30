@@ -1,6 +1,18 @@
+% dTOR_compute_fiber_weights
 % Script to seed the structural connectome with an ROI input, calculating a weight for each fiber streamline based on intersection with the ROI
 % Adapted to run in sbatch from Suresh Joel, General Electric Global Research, April 2018
 
+%%%
+
+%%author__ = Mona Zimmermann
+%%contact__ = m.l.m.zimmermann@amsterdamumc.nl
+%%date__ = 2026/04/30
+%%status__ = Finished 
+
+%%%%%%%%%%%%%%%%%%%%
+% Requirements     %
+%%%%%%%%%%%%%%%%%%%%
+%%% spm
 
 function dTOR_compute_fiber_weights_main_for_sbatch(path, sub_id)
 
