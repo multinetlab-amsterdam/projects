@@ -1,4 +1,5 @@
 % -------------------------------------------------------------
+% tumor_tract_density_map_indices
 % Script to compute Lesion-Tract Density Map (L-TDM)
 % and Lesion-Tract Density Index (L-TDI)
 % using only tumor-intersecting streamlines.
@@ -7,6 +8,18 @@
 %        fibers_wt (weights >0 means fiber intersects tumor)
 %        tumor mask (NIfTI, already loaded as tumor_mask)
 % -------------------------------------------------------------
+%%%
+
+%%author__ = Mona Zimmermann
+%%contact__ = m.l.m.zimmermann@amsterdamumc.nl
+%%date__ = 2026/04/30
+%%status__ = Finished 
+
+%%%%%%%%%%%%%%%%%%%%
+% Requirements     %
+%%%%%%%%%%%%%%%%%%%%
+%%% spm
+
 %% --- USER EDIT: paths ---
 
 function tumor_tract_density_map_indices_main_for_sbatch(path, sub_id) 
