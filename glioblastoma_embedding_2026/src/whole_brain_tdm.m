@@ -1,3 +1,20 @@
+% Whole brain TDM
+
+%   Script to obtain the whole-brain tract density map (TDM).
+%%%
+
+%%author__ = Mona Zimmermann
+%%contact__ = m.l.m.zimmermann@amsterdamumc.nl
+%%date__ = 2026/04/30 
+%%status__ = Finished 
+
+
+%%%%%%%%%%%%%%%%%%%%
+% Requirements     %
+%%%%%%%%%%%%%%%%%%%%
+
+% spm
+
 %% --- Load the tractogram ---
 load('/path/to/dTOR_fibers_vox_half_mm.mat', 'fibers_vox');
 
