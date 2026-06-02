@@ -100,7 +100,7 @@ def loop_reshaping_data(subjects="all"):
         dataframe containing all subjects data in long format.
 
     """
-    base_path = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/04_analyses/04_BBP_offset_prep/"
+    base_path = "/path/to/bbp/files/"
     
     if subjects == "all":
         
@@ -108,7 +108,7 @@ def loop_reshaping_data(subjects="all"):
     
     elif subjects == "HCs":
         
-        input_dir = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/04_analyses/04_BBP_offset_prep/02_mumo/"
+        input_dir = "/pat/to/HC/files/"
     
     else: print("Specify subjects properly! Options: all or HCs!")
         
@@ -256,7 +256,7 @@ def create_activity_overlaps_dataframe(df_patients_standardized):
     df_patients_standardized_local = df_patients_standardized.copy()
     
     #add tumor overlaps dataframe to dataframe so that know which regions are tumor per patients and should be excluded
-    df_overlaps = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/04_analyses/02_dataframes/20240628_tumor_overlaps_20_perc.csv", index_col=False) #tumor defined as 20%
+    df_overlaps = pd.read_csv("/path/to/overlaps/file", index_col=False) #tumor defined as 20%
     
     #merge the activity, connectivity and overlaps dataframes together
     df_activity_overlaps = pd.merge(df_patients_standardized_local, df_overlaps, on = ['sub', 'roi'], how = 'inner')
@@ -308,7 +308,7 @@ def create_L_TDI_df():
         dataframe containing the L-TDI values for all patients
 
     """
-    path = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/02_masks/"
+    path = "/path/to/files/"
     filepaths = glob.glob(os.path.join(path, "sub-*", "*_L_TDI_MNI152NLin2009bAsym_res-05mm.mat"))
     print("Found files:", filepaths)
     
@@ -523,7 +523,7 @@ def loop_extract_tumor_rim():
         print(sub)
         
         #load in DTI matrix
-        input_file = f"/data/anw/anw-work/MULTINET/NO-cohorten/new_scans/derivatives/dwi-connectome/{sub}/ses-T1/conn/{sub}_ses-T1_acq-024_run-1_atlas-BNA_tumor_desc-streams_connmatrix.csv"
+        input_file = f"/path/to/connectivity/file/{sub}_ses-T1_acq-024_run-1_atlas-BNA_tumor_desc-streams_connmatrix.csv"
         matrix = np.loadtxt(input_file, delimiter=",")
         
         # --- All connectivities --- # 
@@ -594,7 +594,7 @@ def create_activity_conn_df(df_tumor_rim, df_patients_standardized):
     
 
     """
-    base_overlaps = "/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/04_analyses/02_dataframes/"
+    base_overlaps = "/path/to/dataframes/"
     
     #put together dataframe for activity and tumor rim connectivity
     df_activity_conn = pd.merge(df_tumor_rim, df_patients_standardized, on = ['sub', 'roi'], how = 'inner')
@@ -804,13 +804,13 @@ def load_tdm_tumor_occurrence():
 
     """
     #load TDM
-    tdm = nib.load("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/02_masks/whole_brain_TDM_mni_icbm152_nlin_asym_09b_new_script_final.nii.gz").get_fdata()
+    tdm = nib.load("/path/to/tdm/nifti.nii.gz").get_fdata()
     print(tdm.shape)
     
     #load brainmaps
-    tumor_occurrence_map_boston_mgh = nib.load("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/02_masks/MNI152_T1_1mm_lesionmask_GBM_2_MNI152NLin2009bAsym_res-05mm.nii.gz").get_fdata()
+    tumor_occurrence_map_boston_mgh = nib.load("path/to/tumor/occurrence/map1").get_fdata()
     print(tumor_occurrence_map_boston_mgh.shape)
-    tumor_occurrence_map_tcga = nib.load("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/02_masks/MNI152_T1_1mm_lesionmask_GBM_TCGA_2_MNI152NLin2009bAsym_res-05mm.nii.gz").get_fdata()
+    tumor_occurrence_map_tcga = nib.load("/path/to/tumor/occurrence/map2").get_fdata()
     print(tumor_occurrence_map_tcga.shape)
     
     #flatten the maps to arrays for scatterplot and correlation
@@ -859,7 +859,7 @@ def prep_clinical_analysis(df_LTDI_analysis, df_PATNET, df_tumor_conn_analysis):
     """
     # --- Clinical Info --- # 
     #load in SPSS files 
-    info = pyreadstat.read_sav('/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/03_participants/20240410_selection_patients_no_MEGIN_covs_updated_excluding_sub-9071.sav')[0] 
+    info = pyreadstat.read_sav('/path/to/spss/info')[0] 
     info["sub"] = info["Case_ID"].astype(int).astype(str).str.zfill(4).apply(lambda x: f"sub-{x}")
     
     info_final = info.copy()
@@ -1215,7 +1215,7 @@ def PATNET_TDI_analysis(df_PATNET, df_LTDI_analysis):
 
 def compute_tumor_distances(
     tumor_overlaps: pd.DataFrame,
-    bna_path: str = "/data/anw/anw-work/MULTINET/t.numan/testdata/atlas/BNA_coordinates_only.txt",
+    bna_path: str = "/path/to/BNA/coords.txt",
     perc_filt_threshold: float = 20.0,
 ) -> pd.DataFrame:
     """
@@ -1317,7 +1317,7 @@ def prepare_eucl_distance_df(df_activity_conn_no_tumor):
     df_input_local = df_activity_conn_no_tumor.copy()
     
     #load in tumor overlaps
-    tumor_overlaps = pd.read_csv("/data/anw/anw-work/MULTINET/m.zimmermann/01_projects/2024_DTI_moth/04_analyses/02_dataframes/20240628_tumor_overlaps_20_perc.csv", index_col=False)
+    tumor_overlaps = pd.read_csv("/path/to/tumor/overlaps.csv", index_col=False)
 
     #compute the median and minimum distance of every rois centroid to the tumor centroids 
     tumor_distances = compute_tumor_distances(tumor_overlaps)
