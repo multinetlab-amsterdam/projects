@@ -1,6 +1,8 @@
 ## Functional status prediction in contrast-enhancing glioma
 This is the official code repository for the paper: **Predicting long-term postoperative functional status in contrast-enhancing glioma**.
 
+Patient data are not publicly available due to privacy/ethical restrictions; access may be requested from the corresponding author pending institutional approval.
+
 The article is currently under review. Publicly available links are available below:
 
 **Preregistration:** [View on OSF](https://osf.io/f29xm/overview)
