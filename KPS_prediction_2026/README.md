@@ -1,11 +1,13 @@
-## KPS prediction in contrast-enhancing glioma
+## Functional status prediction in contrast-enhancing glioma
 This is the official code repository for the paper: **Predicting long-term postoperative functional status in contrast-enhancing glioma**.
+
+The article is currently under review. Publicly available links are available below:
 
 **Preregistration:** [View on OSF](https://osf.io/f29xm/overview)
 
 **Open-source app:** [App](https://glioma-kps-prediction.streamlit.app/)
 
-**DOI:** TBD
+**Preprint:** [medRxiv](https://www.medrxiv.org/content/10.64898/2026.04.28.26351937v1)
 
 
 ## Project overview
