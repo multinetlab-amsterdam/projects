@@ -5,9 +5,9 @@ Patient data are not publicly available due to privacy/ethical restrictions; acc
 
 The article is currently under review. Publicly available links are available below:
 
-**Preregistration:** [View on OSF](https://osf.io/f29xm/overview)
+**Preregistration:** [OSF](https://osf.io/f29xm/overview)
 
-**Open-source app:** [App](https://glioma-kps-prediction.streamlit.app/)
+**Open-source app:** [Web-based App](https://glioma-kps-prediction.streamlit.app/)
 
 **Preprint:** [medRxiv](https://www.medrxiv.org/content/10.64898/2026.04.28.26351937v1)
 
